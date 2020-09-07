@@ -18,6 +18,7 @@ namespace SistemasLegales.Models.Entidades
         [Display(Name = "Ciudad")]
         public string Nombre { get; set; }
 
+        [Display(Name = "Empresa")]
         public int IdEmpresa { get; set; }
 
         [Display(Name = "Empresa")]

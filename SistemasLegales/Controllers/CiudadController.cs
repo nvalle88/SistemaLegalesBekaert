@@ -85,6 +85,7 @@ namespace SistemasLegales.Controllers
             {
                 ViewBag.accion = ciudad.IdCiudad == 0 ? "Crear" : "Editar";
                 var UsuarioAutenticado = await _userManager.GetUserAsync(User);
+              
                 if (ModelState.IsValid)
                 {
                     var existeRegistro = false;
@@ -109,8 +110,17 @@ namespace SistemasLegales.Controllers
                         await db.SaveChangesAsync();
                         return this.Redireccionar($"{Mensaje.Informacion}|{Mensaje.Satisfactorio}");
                     }
-                    else
+                    else 
+                    {
+                        if (User.IsInRole(Perfiles.AdministradorEmpresa))
+                            ViewData["Empresas"] = new SelectList(db.Empresa.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(x => x.Nombre).ToList(), "IdEmpresa", "Nombre");
+                        else
+                            ViewData["Empresas"] = new SelectList(db.Empresa.OrderBy(x => x.Nombre).ToList(), "IdEmpresa", "Nombre");
                         return this.VistaError(ciudad, $"{Mensaje.Error}|{Mensaje.ExisteRegistro}");
+
+                    }
+                  
+
                 }
                 return this.VistaError(ciudad, $"{Mensaje.Error}|{Mensaje.ModeloInvalido}");
             }
