@@ -1,0 +1,228 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;</PackageTargetFallback>
+    <UserSecretsId>aspnet-SistemasLegales-C3B9E365-321B-4E89-820C-A984C244467E</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="es\**" />
+    <Compile Remove="refs\**" />
+    <Compile Remove="runtimes\**" />
+    <Compile Remove="zh-TW\**" />
+    <Compile Remove="zh\**" />
+    <Content Remove="es\**" />
+    <Content Remove="refs\**" />
+    <Content Remove="runtimes\**" />
+    <Content Remove="zh-TW\**" />
+    <Content Remove="zh\**" />
+    <EmbeddedResource Remove="es\**" />
+    <EmbeddedResource Remove="refs\**" />
+    <EmbeddedResource Remove="runtimes\**" />
+    <EmbeddedResource Remove="zh-TW\**" />
+    <EmbeddedResource Remove="zh\**" />
+    <None Remove="es\**" />
+    <None Remove="refs\**" />
+    <None Remove="runtimes\**" />
+    <None Remove="zh-TW\**" />
+    <None Remove="zh\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Migrations\20200817230616_Ejemplo.cs" />
+    <Compile Remove="Migrations\20200817230616_Ejemplo.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="crypto.dll" />
+    <None Remove="Dapper.dll" />
+    <None Remove="Hangfire.AspNetCore.dll" />
+    <None Remove="Hangfire.Core.dll" />
+    <None Remove="Hangfire.SqlServer.dll" />
+    <None Remove="MailKit.dll" />
+    <None Remove="Microsoft.ApplicationInsights.AspNetCore.dll" />
+    <None Remove="Microsoft.ApplicationInsights.dll" />
+    <None Remove="Microsoft.AspNetCore.Antiforgery.dll" />
+    <None Remove="Microsoft.AspNetCore.Authentication.Cookies.dll" />
+    <None Remove="Microsoft.AspNetCore.Authentication.dll" />
+    <None Remove="Microsoft.AspNetCore.Authorization.dll" />
+    <None Remove="Microsoft.AspNetCore.Cors.dll" />
+    <None Remove="Microsoft.AspNetCore.Cryptography.Internal.dll" />
+    <None Remove="Microsoft.AspNetCore.Cryptography.KeyDerivation.dll" />
+    <None Remove="Microsoft.AspNetCore.DataProtection.Abstractions.dll" />
+    <None Remove="Microsoft.AspNetCore.DataProtection.dll" />
+    <None Remove="Microsoft.AspNetCore.Diagnostics.Abstractions.dll" />
+    <None Remove="Microsoft.AspNetCore.Diagnostics.dll" />
+    <None Remove="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.dll" />
+    <None Remove="Microsoft.AspNetCore.Hosting.Abstractions.dll" />
+    <None Remove="Microsoft.AspNetCore.Hosting.dll" />
+    <None Remove="Microsoft.AspNetCore.Hosting.Server.Abstractions.dll" />
+    <None Remove="Microsoft.AspNetCore.Html.Abstractions.dll" />
+    <None Remove="Microsoft.AspNetCore.Http.Abstractions.dll" />
+    <None Remove="Microsoft.AspNetCore.Http.dll" />
+    <None Remove="Microsoft.AspNetCore.Http.Extensions.dll" />
+    <None Remove="Microsoft.AspNetCore.Http.Features.dll" />
+    <None Remove="Microsoft.AspNetCore.HttpOverrides.dll" />
+    <None Remove="Microsoft.AspNetCore.Identity.dll" />
+    <None Remove="Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll" />
+    <None Remove="Microsoft.AspNetCore.JsonPatch.dll" />
+    <None Remove="Microsoft.AspNetCore.Localization.dll" />
+    <None Remove="Microsoft.AspNetCore.Mvc.Abstractions.dll" />
+    <None Remove="Microsoft.AspNetCore.Mvc.ApiExplorer.dll" />
+    <None Remove="Microsoft.AspNetCore.Mvc.Core.dll" />
+    <None Remove="Microsoft.AspNetCore.Mvc.Cors.dll" />
+    <None Remove="Microsoft.AspNetCore.Mvc.DataAnnotations.dll" />
+    <None Remove="Microsoft.AspNetCore.Mvc.dll" />
+    <None Remove="Microsoft.AspNetCore.Mvc.Formatters.Json.dll" />
+    <None Remove="Microsoft.AspNetCore.Mvc.Localization.dll" />
+    <None Remove="Microsoft.AspNetCore.Mvc.Razor.dll" />
+    <None Remove="Microsoft.AspNetCore.Mvc.Razor.Host.dll" />
+    <None Remove="Microsoft.AspNetCore.Mvc.TagHelpers.dll" />
+    <None Remove="Microsoft.AspNetCore.Mvc.ViewFeatures.dll" />
+    <None Remove="Microsoft.AspNetCore.Razor.dll" />
+    <None Remove="Microsoft.AspNetCore.Razor.Runtime.dll" />
+    <None Remove="Microsoft.AspNetCore.ResponseCaching.Abstractions.dll" />
+    <None Remove="Microsoft.AspNetCore.Routing.Abstractions.dll" />
+    <None Remove="Microsoft.AspNetCore.Routing.dll" />
+    <None Remove="Microsoft.AspNetCore.Server.IISIntegration.dll" />
+    <None Remove="Microsoft.AspNetCore.Server.Kestrel.dll" />
+    <None Remove="Microsoft.AspNetCore.Session.dll" />
+    <None Remove="Microsoft.AspNetCore.StaticFiles.dll" />
+    <None Remove="Microsoft.AspNetCore.WebUtilities.dll" />
+    <None Remove="Microsoft.DotNet.PlatformAbstractions.dll" />
+    <None Remove="Microsoft.EntityFrameworkCore.dll" />
+    <None Remove="Microsoft.EntityFrameworkCore.Relational.dll" />
+    <None Remove="Microsoft.EntityFrameworkCore.SqlServer.dll" />
+    <None Remove="Microsoft.Extensions.Caching.Abstractions.dll" />
+    <None Remove="Microsoft.Extensions.Caching.Memory.dll" />
+    <None Remove="Microsoft.Extensions.Configuration.Abstractions.dll" />
+    <None Remove="Microsoft.Extensions.Configuration.Binder.dll" />
+    <None Remove="Microsoft.Extensions.Configuration.dll" />
+    <None Remove="Microsoft.Extensions.Configuration.EnvironmentVariables.dll" />
+    <None Remove="Microsoft.Extensions.Configuration.FileExtensions.dll" />
+    <None Remove="Microsoft.Extensions.Configuration.Json.dll" />
+    <None Remove="Microsoft.Extensions.Configuration.UserSecrets.dll" />
+    <None Remove="Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
+    <None Remove="Microsoft.Extensions.DependencyInjection.dll" />
+    <None Remove="Microsoft.Extensions.DependencyModel.dll" />
+    <None Remove="Microsoft.Extensions.DiagnosticAdapter.dll" />
+    <None Remove="Microsoft.Extensions.FileProviders.Abstractions.dll" />
+    <None Remove="Microsoft.Extensions.FileProviders.Composite.dll" />
+    <None Remove="Microsoft.Extensions.FileProviders.Physical.dll" />
+    <None Remove="Microsoft.Extensions.FileSystemGlobbing.dll" />
+    <None Remove="Microsoft.Extensions.Globalization.CultureInfoCache.dll" />
+    <None Remove="Microsoft.Extensions.Localization.Abstractions.dll" />
+    <None Remove="Microsoft.Extensions.Localization.dll" />
+    <None Remove="Microsoft.Extensions.Logging.Abstractions.dll" />
+    <None Remove="Microsoft.Extensions.Logging.Console.dll" />
+    <None Remove="Microsoft.Extensions.Logging.Debug.dll" />
+    <None Remove="Microsoft.Extensions.Logging.dll" />
+    <None Remove="Microsoft.Extensions.ObjectPool.dll" />
+    <None Remove="Microsoft.Extensions.Options.ConfigurationExtensions.dll" />
+    <None Remove="Microsoft.Extensions.Options.dll" />
+    <None Remove="Microsoft.Extensions.PlatformAbstractions.dll" />
+    <None Remove="Microsoft.Extensions.Primitives.dll" />
+    <None Remove="Microsoft.Extensions.WebEncoders.dll" />
+    <None Remove="Microsoft.Net.Http.Headers.dll" />
+    <None Remove="Microsoft.VisualStudio.Web.BrowserLink.dll" />
+    <None Remove="MimeKit.dll" />
+    <None Remove="Newtonsoft.Json.dll" />
+    <None Remove="Remotion.Linq.dll" />
+    <None Remove="SendMails.dll" />
+    <None Remove="SistemasLegales.dll" />
+    <None Remove="System.Collections.NonGeneric.dll" />
+    <None Remove="System.Collections.Specialized.dll" />
+    <None Remove="System.ComponentModel.DataAnnotations.dll" />
+    <None Remove="System.ComponentModel.Primitives.dll" />
+    <None Remove="System.ComponentModel.TypeConverter.dll" />
+    <None Remove="System.Core.dll" />
+    <None Remove="System.Data.Common.dll" />
+    <None Remove="System.Diagnostics.Contracts.dll" />
+    <None Remove="System.Diagnostics.StackTrace.dll" />
+    <None Remove="System.dll" />
+    <None Remove="System.Interactive.Async.dll" />
+    <None Remove="System.Net.dll" />
+    <None Remove="System.Net.WebSockets.dll" />
+    <None Remove="System.Numerics.dll" />
+    <None Remove="System.Runtime.CompilerServices.Unsafe.dll" />
+    <None Remove="System.Runtime.Serialization.dll" />
+    <None Remove="System.Runtime.Serialization.Primitives.dll" />
+    <None Remove="System.ServiceModel.dll" />
+    <None Remove="System.ServiceModel.Web.dll" />
+    <None Remove="System.Text.Encodings.Web.dll" />
+    <None Remove="System.Windows.dll" />
+    <None Remove="System.Xml.dll" />
+    <None Remove="System.Xml.Linq.dll" />
+    <None Remove="System.Xml.Serialization.dll" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="HangFire" Version="1.6.20" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="1.1.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="1.1.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="1.1.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="1.1.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.6" />
+    <PackageReference Include="Microsoft.AspNetCore.Session" Version="1.1.3" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.1.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="1.1.5" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.1.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.Design" Version="1.1.5" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="1.1.5" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="1.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="1.1.2" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="1.1.4" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="1.1.3" />
+    <PackageReference Include="MimeTypes" Version="1.0.6" />
+    <PackageReference Include="Remotion.Linq" Version="2.2.0" />
+    <PackageReference Include="SendMailSMTPNet.Core" Version="1.2.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="1.0.3" />
+    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="1.0.1" />
+    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Views\OrganismoControl\" />
+    <Folder Include="wwwroot\js\moment\" />
+     <Folder Include="wwwroot\Requisitos\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Views\Requisito\DetallesFinalizado.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Requisito\EditarFinalizado.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Requisito\Editar.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Requisito\GestionarFinalizado.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Requisito\IndexFinalizado.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Requisito\_ListadoFinalizado.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Requisito\_RequisitoLegalSelectFinalizado.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Requisito\_VistaFiltradoRequisitoFinalizado.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Shared\_CambiarHabilitar.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+  </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
+
+</Project>
