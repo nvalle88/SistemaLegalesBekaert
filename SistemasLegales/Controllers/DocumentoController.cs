@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -15,10 +16,12 @@ namespace SistemasLegales.Controllers
     public class DocumentoController : Controller
     {
         private readonly SistemasLegalesContext db;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public DocumentoController(SistemasLegalesContext context)
+        public DocumentoController(SistemasLegalesContext context, UserManager<ApplicationUser> userManager)
         {
             db = context;
+            _userManager = userManager;
         }
 
         public async Task<IActionResult> Index()

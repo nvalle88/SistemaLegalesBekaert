@@ -18,6 +18,13 @@ namespace SistemasLegales.Models.Entidades
         [Display(Name = "Proceso")]
         public string Nombre { get; set; }
 
+
+        [Display(Name = "Empresa")]
+        public int? IdEmpresa { get; set; }
+
+        [Display(Name = "Empresa")]
+        public virtual Empresa Empresa { get; set; }
+
         public virtual ICollection<Requisito> AdminRequisitoLegal { get; set; }
     }
 }

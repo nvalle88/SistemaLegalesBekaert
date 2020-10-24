@@ -24,10 +24,10 @@ namespace SistemasLegales.Controllers
         public IConfigurationRoot Configuration { get; }
         private readonly IEmailSender emailSender;
         private readonly IUploadFileService uploadFileService;
-        private readonly UserManager<ApplicationUser> userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         public RequisitoController(UserManager<ApplicationUser> userManager, SistemasLegalesContext context, IEmailSender emailSender, IUploadFileService uploadFileService)
         {
-            this.userManager = userManager;
+            this._userManager = userManager;
             db = context;
             this.emailSender = emailSender;
             this.uploadFileService = uploadFileService;
@@ -186,7 +186,7 @@ namespace SistemasLegales.Controllers
                             responseFile = await uploadFileService.UploadFiles(activoFijoDocumentoTransfer);
                         }
                     }
-                    await miRequisito.EnviarEmailNotificaionFinalizadoModificado(User.Identity.Name,userManager, emailSender, db);
+                    await miRequisito.EnviarEmailNotificaionFinalizadoModificado(User.Identity.Name,_userManager, emailSender, db);
                     if (responseFile)
                     {
                        
@@ -409,7 +409,7 @@ namespace SistemasLegales.Controllers
                 await db.SaveChangesAsync();
 
                 await requisitoFinalizar.EnviarEmailNotificaionRequisitoFinalizado(emailSender, db);
-                await miRequisito.EnviarEmailNotificaionRequisitoCreacionAutomatica(userManager,emailSender, db);
+                await miRequisito.EnviarEmailNotificaionRequisitoCreacionAutomatica(_userManager,emailSender, db);
 
                 return this.Redireccionar($"{Mensaje.Informacion}|{Mensaje.Satisfactorio}");
             }
@@ -609,7 +609,7 @@ namespace SistemasLegales.Controllers
                         await miRequisito.EnviarEmailNotificaionRequisitoCreacion(url, emailSender, db);
                     }
 
-                    await miRequisito.EnviarEmailNotificaion(userManager, emailSender, db);
+                    await miRequisito.EnviarEmailNotificaion(_userManager, emailSender, db);
                     return this.Redireccionar(responseFile ? $"{Mensaje.Informacion}|{Mensaje.Satisfactorio}" : $"{Mensaje.Aviso}|{Mensaje.ErrorUploadFiles}", "Gestionar", new { id = miRequisito.IdRequisito });
 
                     // return this.Redireccionar(,responseFile ? $"{Mensaje.Informacion}|{Mensaje.Satisfactorio}" : $"{Mensaje.Aviso}|{Mensaje.ErrorUploadFiles}");
@@ -777,7 +777,7 @@ namespace SistemasLegales.Controllers
                         await miRequisito.EnviarEmailNotificaionRequisitoCreacion(url, emailSender, db);
                     }
 
-                    await miRequisito.EnviarEmailNotificaion(userManager,emailSender, db);
+                    await miRequisito.EnviarEmailNotificaion(_userManager,emailSender, db);
                     return this.Redireccionar(responseFile ? $"{Mensaje.Informacion}|{Mensaje.Satisfactorio}" : $"{Mensaje.Aviso}|{Mensaje.ErrorUploadFiles}", "Gestionar",new { id= miRequisito.IdRequisito } );
 
                    // return this.Redireccionar(,responseFile ? $"{Mensaje.Informacion}|{Mensaje.Satisfactorio}" : $"{Mensaje.Aviso}|{Mensaje.ErrorUploadFiles}");

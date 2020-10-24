@@ -11,12 +11,24 @@
 
 <form asp-action="Gestionar" class="form-horizontal" novalidate="novalidate">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-    @{ 
+    @{
         if (Model != null)
         {
             <input type="hidden" asp-for="IdActor" />
         }
     }
+
+    <div class="row">
+        <div class="col-md-2 col-xs-2 form-control-label">
+            <label asp-for="IdEmpresa"></label>
+        </div>
+        <div class="col-md-10 col-xs-10">
+            <div class="form-group">
+                <select asp-for="IdEmpresa" class="form-control show-tick" data-live-search="true" asp-items="ViewBag.Empresas"></select>
+                <span asp-validation-for="IdEmpresa" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
     <div class="row">
         <div class="col-md-2 col-xs-2 form-control-label">
             <label asp-for="Nombres"></label>

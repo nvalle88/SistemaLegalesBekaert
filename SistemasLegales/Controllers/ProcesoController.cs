@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SistemasLegales.Models.Entidades;
 using SistemasLegales.Models.Extensores;
@@ -15,24 +17,32 @@ namespace SistemasLegales.Controllers
     public class ProcesoController : Controller
     {
         private readonly SistemasLegalesContext db;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ProcesoController(SistemasLegalesContext context)
+        public ProcesoController(SistemasLegalesContext context, UserManager<ApplicationUser> userManager)
         {
             db = context;
+            _userManager = userManager;
         }
 
         public async Task<IActionResult> Index()
         {
-            var lista = new List<Proceso>();
+            IQueryable<Proceso> lista = db.Proceso;
+            var resultado = new List<Proceso>();
             try
             {
-                lista = await db.Proceso.OrderBy(c => c.Nombre).ToListAsync();
+                if (User.IsInRole(Perfiles.AdministradorEmpresa))
+                {
+                    var UsuarioAutenticado = await _userManager.GetUserAsync(User);
+                    lista = lista.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa);
+                }
+                resultado = await lista.Include(x => x.Empresa).OrderBy(c => c.Nombre).ToListAsync();
             }
             catch (Exception)
             {
                 TempData["Mensaje"] = $"{Mensaje.Error}|{Mensaje.ErrorListado}";
             }
-            return View(lista);
+            return View(resultado);
         }
         
         public async Task<IActionResult> Gestionar(int? id)
@@ -40,6 +50,15 @@ namespace SistemasLegales.Controllers
             try
             {
                 ViewBag.accion = id == null ? "Crear" : "Editar";
+
+                var UsuarioAutenticado = await _userManager.GetUserAsync(User);
+
+                if (User.IsInRole(Perfiles.AdministradorEmpresa))
+                    ViewData["Empresas"] = new SelectList(db.Empresa.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(x => x.Nombre).ToList(), "IdEmpresa", "Nombre");
+                else
+                    ViewData["Empresas"] = new SelectList(db.Empresa.OrderBy(x => x.Nombre).ToList(), "IdEmpresa", "Nombre");
+
+
                 if (id != null)
                 {
                     var proceso = await db.Proceso.FirstOrDefaultAsync(c => c.IdProceso == id);
@@ -63,19 +82,23 @@ namespace SistemasLegales.Controllers
             try
             {
                 ViewBag.accion = proceso.IdProceso == 0 ? "Crear" : "Editar";
+                var UsuarioAutenticado = await _userManager.GetUserAsync(User);
+
                 if (ModelState.IsValid)
                 {
                     var existeRegistro = false;
                     if (proceso.IdProceso == 0)
                     {
-                        if (!await db.Proceso.AnyAsync(c => c.Nombre.ToUpper().Trim() == proceso.Nombre.ToUpper().Trim()))
+                        if (!await db.Proceso.AnyAsync(c => c.Nombre.ToUpper().Trim() == proceso.Nombre.ToUpper().Trim()
+                         && c.IdEmpresa == UsuarioAutenticado.IdEmpresa))
                             db.Add(proceso);
                         else
                             existeRegistro = true;
                     }
                     else
                     {
-                        if (!await db.Proceso.Where(c => c.Nombre.ToUpper().Trim() == proceso.Nombre.ToUpper().Trim()).AnyAsync(c => c.IdProceso != proceso.IdProceso))
+                        if (!await db.Proceso.Where(c => c.Nombre.ToUpper().Trim() == proceso.Nombre.ToUpper().Trim()
+                        && c.IdEmpresa == UsuarioAutenticado.IdEmpresa).AnyAsync(c => c.IdProceso != proceso.IdProceso))
                             db.Update(proceso);
                         else
                             existeRegistro = true;
@@ -86,7 +109,14 @@ namespace SistemasLegales.Controllers
                         return this.Redireccionar($"{Mensaje.Informacion}|{Mensaje.Satisfactorio}");
                     }
                     else
+                    {
+                        if (User.IsInRole(Perfiles.AdministradorEmpresa))
+                            ViewData["Empresas"] = new SelectList(db.Empresa.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(x => x.Nombre).ToList(), "IdEmpresa", "Nombre");
+                        else
+                            ViewData["Empresas"] = new SelectList(db.Empresa.OrderBy(x => x.Nombre).ToList(), "IdEmpresa", "Nombre");
                         return this.VistaError(proceso, $"{Mensaje.Error}|{Mensaje.ExisteRegistro}");
+
+                    }
                 }
                 return this.VistaError(proceso, $"{Mensaje.Error}|{Mensaje.ModeloInvalido}");
             }

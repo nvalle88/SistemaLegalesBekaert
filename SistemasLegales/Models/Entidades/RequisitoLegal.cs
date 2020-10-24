@@ -22,6 +22,13 @@ namespace SistemasLegales.Models.Entidades
         [Required(ErrorMessage = "Debe seleccionar el {0}.")]
         [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0}.")]
         public int IdOrganismoControl { get; set; }
+
+        [Display(Name = "Empresa")]
+        public int? IdEmpresa { get; set; }
+
+        [Display(Name = "Empresa")]
+        public virtual Empresa Empresa { get; set; }
+
         public virtual OrganismoControl OrganismoControl { get; set; }
 
         public virtual ICollection<Documento> Documento { get; set; }

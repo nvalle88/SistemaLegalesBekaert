@@ -13,7 +13,7 @@
 }
 
 @{
-    if (User.IsInRole(Perfiles.Gestor) || User.IsInRole(Perfiles.Administrador))
+    if (User.IsInRole(Perfiles.Gestor) || User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
     {
         <div class="row">
             <div class="col-lg-2 col-sm-4 col-xs-12">
@@ -36,8 +36,11 @@
                 <th>
                     @Html.DisplayNameFor(model => model.FirstOrDefault().Email)
                 </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.FirstOrDefault().Empresa)
+                </th>
                 @{
-                    if (User.IsInRole(Perfiles.Gestor) || User.IsInRole(Perfiles.Administrador))
+                    if (User.IsInRole(Perfiles.Gestor) || User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
                     {
                         <th>
                             Opciones
@@ -50,33 +53,36 @@
             @{
                 foreach (var item in Model)
                 {
-                    <tr>
-                        <td>
-                            <p class="font-12 text-left">@item.Nombres </p>
-                        </td>
-                        <td>
-                            <p class="font-12 text-left">@item.Departamento </p>
-                        </td>
-                        <td>
-                            <p class="font-12 text-left">@item.Email </p>
-                        </td>
-                        @{
-                            if (User.IsInRole(Perfiles.Gestor) || User.IsInRole(Perfiles.Administrador))
-                            {
-                                <td>
-                                    <a asp-action="Gestionar" onclick="MiApp.LoadingPanel.mostrarNotificacion('bodyTemplate', '')" class="font-12 text-left" asp-route-id="@item.IdActor">Editar</a> |
-                                    <a href="javascript:void(0);" class="btnEliminar font-12 text-left" id="@item.IdActor" onclick="MiApp.Datatables.eventoBtnEliminar(this)" data-descripcion="&#191;Desea eliminar el Actor... ?">Eliminar</a>
-                                </td>
+                        <tr>
+                            <td>
+                                <p class="font-12 text-left">@item.Nombres </p>
+                            </td>
+                            <td>
+                                <p class="font-12 text-left">@item.Departamento </p>
+                            </td>
+                            <td>
+                                <p class="font-12 text-left">@item.Email </p>
+                            </td>
+                            <td>
+                                <p class="font-12 text-left">@item.Empresa.Nombre </p>
+                            </td>
+                            @{
+                                if (User.IsInRole(Perfiles.Gestor) || User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
+                                {
+                                    <td>
+                                        <a asp-action="Gestionar" onclick="MiApp.LoadingPanel.mostrarNotificacion('bodyTemplate', '')" class="font-12 text-left" asp-route-id="@item.IdActor">Editar</a> |
+                                        <a href="javascript:void(0);" class="btnEliminar font-12 text-left" id="@item.IdActor" onclick="MiApp.Datatables.eventoBtnEliminar(this)" data-descripcion="&#191;Desea eliminar el Actor... ?">Eliminar</a>
+                                    </td>
+                                }
                             }
-                        }
-                    </tr>
+                        </tr>
                 }
             }
         </tbody>
     </table>
 </div>
 @{
-    if (User.IsInRole(Perfiles.Gestor) || User.IsInRole(Perfiles.Administrador))
+    if (User.IsInRole(Perfiles.Gestor) || User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
     {
         await Html.RenderPartialAsync("_Eliminar");
     }

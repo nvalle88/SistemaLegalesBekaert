@@ -18,5 +18,13 @@ namespace SistemasLegales.Models.Entidades
         public virtual ICollection<ApplicationUser> ApplicationUsers { get; set; }
 
         public virtual ICollection<Ciudad> Ciudades { get; set; }
+
+        public virtual ICollection<OrganismoControl> OrganismosControl { get; set; }
+
+        public virtual ICollection<Actor> Actores { get; set; }
+
+        public virtual ICollection<Proceso> Procesos { get; set; }
+
+        public virtual ICollection<Proyecto> Proyectos { get; set; }
     }
 }

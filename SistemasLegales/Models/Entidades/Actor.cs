@@ -30,6 +30,13 @@ namespace SistemasLegales.Models.Entidades
         [Display(Name = "Correo electrónico")]
         public string Email { get; set; }
 
+
+        [Display(Name = "Empresa")]
+        public int? IdEmpresa { get; set; }
+
+        [Display(Name = "Empresa")]
+        public virtual Empresa Empresa { get; set; }
+
         public virtual ICollection<Requisito> AdminRequisitoLegalIdActorCustodioDocumento { get; set; }
         public virtual ICollection<Requisito> AdminRequisitoLegalIdActorDuennoProceso { get; set; }
         public virtual ICollection<Requisito> AdminRequisitoLegalIdActorResponsableGestSeg { get; set; }

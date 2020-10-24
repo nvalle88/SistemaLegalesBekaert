@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -16,24 +17,31 @@ namespace SistemasLegales.Controllers
     public class RequisitoLegalController : Controller
     {
         private readonly SistemasLegalesContext db;
-
-        public RequisitoLegalController(SistemasLegalesContext context)
+        private readonly UserManager<ApplicationUser> _userManager;
+        public RequisitoLegalController(SistemasLegalesContext context, UserManager<ApplicationUser> userManager)
         {
             db = context;
+            _userManager = userManager;
         }
 
         public async Task<IActionResult> Index()
         {
-            var lista = new List<RequisitoLegal>();
+            IQueryable<RequisitoLegal> lista = db.RequisitoLegal;
+            var resultado = new List<RequisitoLegal>();
             try
             {
-                lista = await db.RequisitoLegal.Include(c=> c.OrganismoControl).OrderBy(c => c.Nombre).ToListAsync();
+                if (User.IsInRole(Perfiles.AdministradorEmpresa))
+                {
+                    var UsuarioAutenticado = await _userManager.GetUserAsync(User);
+                    lista = lista.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa);
+                }
+                resultado = await db.RequisitoLegal.Include(c=> c.OrganismoControl).OrderBy(c => c.Nombre).ToListAsync();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 TempData["Mensaje"] = $"{Mensaje.Error}|{Mensaje.ErrorListado}";
             }
-            return View(lista);
+            return View(resultado);
         }
         
         public async Task<IActionResult> Gestionar(int? id)

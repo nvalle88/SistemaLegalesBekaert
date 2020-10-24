@@ -53,6 +53,12 @@ namespace SistemasLegales.Models.Entidades
                 entity.Property(e => e.Nombres)
                     .IsRequired()
                     .HasColumnType("varchar(200)");
+
+                entity.HasOne(d => d.Empresa)
+                   .WithMany(p => p.Actores)
+                   .HasForeignKey(d => d.IdEmpresa)
+                   .OnDelete(DeleteBehavior.Restrict)
+                   .HasConstraintName("FK_Actor_Empresa");
             });
 
 
@@ -122,6 +128,12 @@ namespace SistemasLegales.Models.Entidades
                 entity.Property(e => e.Nombre)
                     .IsRequired()
                     .HasColumnType("varchar(1000)");
+
+                entity.HasOne(d => d.Empresa)
+                    .WithMany(p => p.OrganismosControl)
+                    .HasForeignKey(d => d.IdEmpresa)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_OrganismoControl_Empresa");
             });
 
             modelBuilder.Entity<Proceso>(entity =>
@@ -132,6 +144,12 @@ namespace SistemasLegales.Models.Entidades
                 entity.Property(e => e.Nombre)
                     .IsRequired()
                     .HasColumnType("varchar(200)");
+
+                entity.HasOne(d => d.Empresa)
+                   .WithMany(p => p.Procesos)
+                   .HasForeignKey(d => d.IdEmpresa)
+                   .OnDelete(DeleteBehavior.Restrict)
+                   .HasConstraintName("FK_Proceso_Empresa");
             });
 
             modelBuilder.Entity<Proyecto>(entity =>
@@ -140,6 +158,14 @@ namespace SistemasLegales.Models.Entidades
                     .HasName("PK_Proyecto");
 
                 entity.Property(e => e.Nombre).HasColumnType("varchar(250)");
+
+
+                entity.HasOne(d => d.Empresa)
+                   .WithMany(p => p.Proyectos)
+                   .HasForeignKey(d => d.IdEmpresa)
+                   .OnDelete(DeleteBehavior.Restrict)
+                   .HasConstraintName("FK_Proyecto_Empresa");
+
             });
 
             modelBuilder.Entity<Requisito>(entity =>
