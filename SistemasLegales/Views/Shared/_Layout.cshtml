@@ -1,4 +1,6 @@
 ﻿@inject Microsoft.ApplicationInsights.AspNetCore.JavaScriptSnippet JavaScriptSnippet
+@inject UserManager<ApplicationUser> UserManager
+@inject SistemasLegales.Services.EmpresaService empresaServices
 <!DOCTYPE html>
 <html>
 <head>
@@ -62,6 +64,12 @@
                         </li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="#">
+                                <em class="material-icons">corporate_fare</em>
+                                <span style="position:relative;bottom:5px;"> @empresaServices.ObtenerNombreEmpresa(User)</span>
+                            </a>
+                        </li>
                         <li>
                             <a asp-action="ChangePassword" asp-controller="Manage">
                                 <em class="material-icons">lock_open</em>

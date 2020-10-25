@@ -20,6 +20,22 @@
             <input type="hidden" asp-for="IdRequisitoLegal" />
         }
     }
+
+
+    <div class="row">
+        <div class="col-md-2 col-xs-2 form-control-label">
+            <label asp-for="IdEmpresa"></label>
+        </div>
+        <div class="col-md-10 col-xs-10 padding-left-5 padding-right-5">
+            <div class="card-inner padding-0 margin-bottom-0">
+                <div class="demo margin-top-0">
+                    <select asp-for="IdEmpresa" class="form-control show-tick" data-live-search="true" asp-items="ViewBag.Empresas"></select>
+                </div>
+                <span asp-validation-for="IdEmpresa" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-md-2 col-xs-2 form-control-label">
             <label asp-for="IdOrganismoControl"></label>
@@ -53,12 +69,43 @@
             <button type="submit" class="btn btn-primary ladda-button" data-style="expand-left" id="btn-guardar">
                 <span class="ladda-label" id="laddaSpanGuardar">ACEPTAR</span>
             </button>
-            <a asp-action="Index"  onclick="MiApp.LoadingPanel.mostrarNotificacion('bodyTemplate', '')" class="btn btn-default">CANCELAR</a>
+            <a asp-action="Index" onclick="MiApp.LoadingPanel.mostrarNotificacion('bodyTemplate', '')" class="btn btn-default">CANCELAR</a>
         </div>
     </div>
 </form>
 
 @section Scripts{
-    @{ await Html.RenderPartialAsync("_SelectPartial"); }
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+
+
+
+    <script type="text/javascript">
+
+        $("#IdEmpresa").change(function () {
+            MiApp.LoadingPanel.mostrarNotificacion("bodyTemplate", "Cargando datos...");
+            $("#IdOrganismoControl").empty();
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("ObtenerOrganismoControlPorEmpresa", "RequisitoLegal")',
+                dataType: 'json',
+                data: { idEmpresa: $("#IdEmpresa").val() },
+                success: function (data) {
+                    $.each(data, function (i, data) {
+                        $("#IdOrganismoControl").append('<option value="'
+                            + data.idOrganismoControl + '">'
+                            + data.nombre + '</option>');
+                    });
+                }, complete: function (data) {
+                    $("#bodyTemplate").waitMe("hide");
+                },
+                error: function (ex) {
+                    alert('Failed to retrieve data.' + ex);
+                }
+            });
+            return false;
+        });
+
+    </script>
+
 }

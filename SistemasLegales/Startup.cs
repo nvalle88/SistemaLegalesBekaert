@@ -81,6 +81,7 @@ namespace SistemasLegales
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
             services.AddScoped<TimedHostedService>();
+            services.AddSingleton<EmpresaService>();
             services.AddSingleton<IUploadFileService, UploadFileService>();
 
             services.AddSingleton<IReporteServicio, ReporteServicio>();

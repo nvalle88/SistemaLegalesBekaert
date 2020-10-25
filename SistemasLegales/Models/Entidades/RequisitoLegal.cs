@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SistemasLegales.Models.Entidades
 {
@@ -23,11 +24,9 @@ namespace SistemasLegales.Models.Entidades
         [Range(1, double.MaxValue, ErrorMessage = "Debe seleccionar el {0}.")]
         public int IdOrganismoControl { get; set; }
 
+        [NotMapped]
         [Display(Name = "Empresa")]
-        public int? IdEmpresa { get; set; }
-
-        [Display(Name = "Empresa")]
-        public virtual Empresa Empresa { get; set; }
+        public int IdEmpresa { get; set; }
 
         public virtual OrganismoControl OrganismoControl { get; set; }
 

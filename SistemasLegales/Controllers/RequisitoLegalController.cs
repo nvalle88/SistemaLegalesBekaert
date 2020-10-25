@@ -33,9 +33,9 @@ namespace SistemasLegales.Controllers
                 if (User.IsInRole(Perfiles.AdministradorEmpresa))
                 {
                     var UsuarioAutenticado = await _userManager.GetUserAsync(User);
-                    lista = lista.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa);
+                    lista = lista.Where(x => x.OrganismoControl.Empresa.IdEmpresa == UsuarioAutenticado.IdEmpresa);
                 }
-                resultado = await db.RequisitoLegal.Include(c=> c.OrganismoControl).OrderBy(c => c.Nombre).ToListAsync();
+                resultado = await lista.Include(c=> c.OrganismoControl).ThenInclude(x=>x.Empresa).OrderBy(c => c.Nombre).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -43,18 +43,67 @@ namespace SistemasLegales.Controllers
             }
             return View(resultado);
         }
-        
+
+
+        public async Task<JsonResult> ObtenerOrganismoControlPorEmpresa(int idEmpresa)
+        {
+            try
+            {
+                var listaOrganismoControl= await db.OrganismoControl
+                    .Where(x => x.IdEmpresa == idEmpresa)
+                    .OrderBy(c => c.Nombre).ToListAsync();
+
+                return Json(listaOrganismoControl);
+            }
+            catch (Exception)
+            {
+                return new JsonResult(new List<OrganismoControl>());
+            }
+        }
+
         public async Task<IActionResult> Gestionar(int? id)
         {
             try
             {
                 ViewBag.accion = id == null ? "Crear" : "Editar";
-                ViewData["OrganismoControl"] = new SelectList(await db.OrganismoControl.OrderBy(c => c.Nombre).ToListAsync(), "IdOrganismoControl", "Nombre");
+
+                var UsuarioAutenticado = await _userManager.GetUserAsync(User);
+
+                var ListaEmpresas = db.Empresa.ToList();
+                var ListaOrganismoControl = db.OrganismoControl.ToList();
+                if (User.IsInRole(Perfiles.AdministradorEmpresa))
+                {
+                    ListaEmpresas = ListaEmpresas.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).ToList();
+                    ListaOrganismoControl = ListaOrganismoControl.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).ToList();
+                }
+
+                var primeraEmpresa = ListaEmpresas.FirstOrDefault();
+
+                ViewData["Empresas"] = new SelectList(ListaEmpresas
+                    .OrderBy(x => x.Nombre)
+                    .ToList(), 
+                    "IdEmpresa", "Nombre",
+                    primeraEmpresa.IdEmpresa);
+
+                ViewData["OrganismoControl"] = new SelectList(ListaOrganismoControl
+                    .Where(x=>x.IdEmpresa==primeraEmpresa.IdEmpresa)
+                    .OrderBy(c => c.Nombre).ToList(), 
+                    "IdOrganismoControl", "Nombre");
+
                 if (id != null)
                 {
-                    var requisitoLegal = await db.RequisitoLegal.Include(c=> c.OrganismoControl).FirstOrDefaultAsync(c => c.IdRequisitoLegal == id);
+                    var requisitoLegal = await db.RequisitoLegal.Include(c => c.OrganismoControl).ThenInclude(x => x.Empresa).FirstOrDefaultAsync(c => c.IdRequisitoLegal == id);
                     if (requisitoLegal == null)
                         return this.Redireccionar($"{Mensaje.Error}|{Mensaje.RegistroNoEncontrado}");
+
+                    var OrganismoControl =  ListaOrganismoControl
+                        .Where(x => x.IdOrganismoControl == requisitoLegal.IdOrganismoControl).FirstOrDefault();
+
+                    requisitoLegal.IdEmpresa = OrganismoControl.IdEmpresa ?? 0;
+                    
+                    ViewData["Empresas"] = new SelectList(ListaEmpresas.OrderBy(x => x.Nombre).ToList(),"IdEmpresa", "Nombre",OrganismoControl.IdEmpresa);
+
+                    ViewData["OrganismoControl"] = new SelectList(ListaOrganismoControl.Where(x => x.IdEmpresa == OrganismoControl.IdEmpresa).OrderBy(c => c.Nombre).ToList(),"IdOrganismoControl", "Nombre", selectedValue: requisitoLegal.IdOrganismoControl);
 
                     return View(requisitoLegal);
                 }
@@ -73,10 +122,10 @@ namespace SistemasLegales.Controllers
             try
             {
                 ViewBag.accion = requisitoLegal.IdRequisitoLegal == 0 ? "Crear" : "Editar";
-                Action accion = async () =>
-                {
-                    ViewData["OrganismoControl"] = new SelectList(await db.OrganismoControl.OrderBy(c => c.Nombre).ToListAsync(), "IdOrganismoControl", "Nombre");
-                };
+                var UsuarioAutenticado = await _userManager.GetUserAsync(User);
+                var ListaEmpresas = new List<Empresa>();
+                var ListaOrganismoControl = new List<OrganismoControl>();
+                var OrganismoControl= new OrganismoControl();
 
                 if (ModelState.IsValid)
                 {
@@ -100,10 +149,55 @@ namespace SistemasLegales.Controllers
                         await db.SaveChangesAsync();
                         return this.Redireccionar($"{Mensaje.Informacion}|{Mensaje.Satisfactorio}");
                     }
-                    else
-                        return this.VistaError(requisitoLegal, $"{Mensaje.Error}|{Mensaje.ExisteRegistro}", accion);
+                    else 
+                    {
+                       
+                        if (requisitoLegal == null)
+                            return this.Redireccionar($"{Mensaje.Error}|{Mensaje.RegistroNoEncontrado}");
+
+                         ListaEmpresas = db.Empresa.ToList();
+                        ListaOrganismoControl = db.OrganismoControl.ToList();
+
+                        if (User.IsInRole(Perfiles.AdministradorEmpresa))
+                        {
+                            ListaEmpresas = ListaEmpresas.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).ToList();
+                            ListaOrganismoControl = ListaOrganismoControl.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).ToList();
+                        }
+
+                        OrganismoControl = ListaOrganismoControl
+                        .Where(x => x.IdOrganismoControl == requisitoLegal.IdOrganismoControl).FirstOrDefault();
+
+                        requisitoLegal.IdEmpresa = OrganismoControl.Empresa?.IdEmpresa ?? 0;
+
+                        ViewData["Empresas"] = new SelectList(ListaEmpresas.OrderBy(x => x.Nombre).ToList(),"IdEmpresa", "Nombre",requisitoLegal.IdEmpresa);
+
+                        ViewData["OrganismoControl"] = new SelectList( ListaOrganismoControl .Where(x => x.IdEmpresa == requisitoLegal.IdEmpresa).OrderBy(c => c.Nombre).ToList(),"IdOrganismoControl", "Nombre",selectedValue: requisitoLegal.IdOrganismoControl);
+
+
+                        return this.VistaError(requisitoLegal, $"{Mensaje.Error}|{Mensaje.ExisteRegistro}");
+
+                    }
+                        
                 }
-                return this.VistaError(requisitoLegal, $"{Mensaje.Error}|{Mensaje.ModeloInvalido}", accion);
+
+                 ListaEmpresas = db.Empresa.ToList();
+                 ListaOrganismoControl = db.OrganismoControl.ToList();
+
+                if (User.IsInRole(Perfiles.AdministradorEmpresa))
+                {
+                    ListaEmpresas = ListaEmpresas.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).ToList();
+                    ListaOrganismoControl = ListaOrganismoControl.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).ToList();
+                }
+
+                OrganismoControl = ListaOrganismoControl
+                .Where(x => x.IdOrganismoControl == requisitoLegal.IdOrganismoControl).FirstOrDefault();
+
+                requisitoLegal.IdEmpresa = OrganismoControl.Empresa?.IdEmpresa ?? 0;
+
+                ViewData["Empresas"] = new SelectList(ListaEmpresas.OrderBy(x => x.Nombre).ToList(), "IdEmpresa", "Nombre", requisitoLegal.IdEmpresa);
+
+                ViewData["OrganismoControl"] = new SelectList(ListaOrganismoControl.Where(x => x.IdEmpresa == requisitoLegal.IdEmpresa).OrderBy(c => c.Nombre).ToList(), "IdOrganismoControl", "Nombre", selectedValue: requisitoLegal.IdOrganismoControl);
+                return this.VistaError(requisitoLegal, $"{Mensaje.Error}|{Mensaje.ModeloInvalido}");
             }
             catch (Exception)
             {
