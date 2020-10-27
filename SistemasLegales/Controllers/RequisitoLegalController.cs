@@ -69,8 +69,8 @@ namespace SistemasLegales.Controllers
 
                 var UsuarioAutenticado = await _userManager.GetUserAsync(User);
 
-                var ListaEmpresas = db.Empresa.ToList();
-                var ListaOrganismoControl = db.OrganismoControl.ToList();
+                var ListaEmpresas =await db.Empresa.ToListAsync();
+                var ListaOrganismoControl =await db.OrganismoControl.ToListAsync();
                 if (User.IsInRole(Perfiles.AdministradorEmpresa))
                 {
                     ListaEmpresas = ListaEmpresas.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).ToList();
@@ -155,7 +155,7 @@ namespace SistemasLegales.Controllers
                         if (requisitoLegal == null)
                             return this.Redireccionar($"{Mensaje.Error}|{Mensaje.RegistroNoEncontrado}");
 
-                         ListaEmpresas = db.Empresa.ToList();
+                        ListaEmpresas = db.Empresa.ToList();
                         ListaOrganismoControl = db.OrganismoControl.ToList();
 
                         if (User.IsInRole(Perfiles.AdministradorEmpresa))

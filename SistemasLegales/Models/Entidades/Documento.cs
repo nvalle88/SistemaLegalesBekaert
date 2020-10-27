@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SistemasLegales.Models.Entidades
 {
@@ -31,6 +32,11 @@ namespace SistemasLegales.Models.Entidades
         [Display(Name = "Cantidad")]
         [Required(ErrorMessage = "Debe introducir la {0}.")]
         public int? Cantidad { get; set; }
+
+
+        [NotMapped]
+        [Display(Name = "Empresa")]
+        public int IdEmpresa { get; set; }
 
         public virtual RequisitoLegal RequisitoLegal { get; set; }
 

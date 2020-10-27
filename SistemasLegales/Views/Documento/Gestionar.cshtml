@@ -5,7 +5,7 @@
 
 }
 @section Migas{
-    <li><a asp-action="Index" onclick="MiApp.LoadingPanel.mostrarNotificacion('bodyTemplate', '')" >Requisitos</a></li>
+    <li><a asp-action="Index" onclick="MiApp.LoadingPanel.mostrarNotificacion('bodyTemplate', '')">Requisitos</a></li>
     <li class="active">@ViewData["accion"]</li>
 }
 
@@ -25,6 +25,20 @@
             <input type="hidden" asp-for="IdDocumento" />
         }
     }
+    <div class="row">
+        <div class="col-md-2 col-xs-2 form-control-label">
+            <label asp-for="IdEmpresa"></label>
+        </div>
+        <div class="col-md-10 col-xs-10 padding-left-5 padding-right-5">
+            <div class="card-inner padding-0 margin-bottom-0">
+                <div class="demo margin-top-0">
+                    <select asp-for="IdEmpresa" class="form-control show-tick" data-live-search="true" asp-items="ViewBag.Empresas"></select>
+                </div>
+                <span asp-validation-for="IdEmpresa" class="text-danger"></span>
+
+            </div>
+        </div>
+    </div>
     <div class="row">
         <div class="col-md-2 col-xs-2 form-control-label">
             <label asp-for="IdRequisitoLegal"></label>
@@ -84,21 +98,50 @@
                     <a href="javascript:;" class="spin-down" data-spin="down"><i class="glyphicon glyphicon-chevron-down"></i></a>
                 </span>
             </div>
-            </div>
         </div>
-        <div class="row">
-            <div class="col-md-offset-3 col-xs-offset-4">
-                <button type="submit" class="btn btn-primary ladda-button" data-style="expand-left" id="btn-guardar">
-                    <span class="ladda-label" id="laddaSpanGuardar">ACEPTAR</span>
-                </button>
-                <a asp-action="Index" onclick="MiApp.LoadingPanel.mostrarNotificacion('bodyTemplate', '')" class="btn btn-default">CANCELAR</a>
-            </div>
+    </div>
+    <div class="row">
+        <div class="col-md-offset-3 col-xs-offset-4">
+            <button type="submit" class="btn btn-primary ladda-button" data-style="expand-left" id="btn-guardar">
+                <span class="ladda-label" id="laddaSpanGuardar">ACEPTAR</span>
+            </button>
+            <a asp-action="Index" onclick="MiApp.LoadingPanel.mostrarNotificacion('bodyTemplate', '')" class="btn btn-default">CANCELAR</a>
         </div>
+    </div>
 </form>
 
 @section Scripts{
     <script src="~/lib/jquery-spinner/js/jquery.spinner.js"></script>
 
-    @{ await Html.RenderPartialAsync("_SelectPartial"); }
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+
+    <script type="text/javascript">
+
+        $("#IdEmpresa").change(function () {
+            MiApp.LoadingPanel.mostrarNotificacion("bodyTemplate", "Cargando datos...");
+            $("#IdRequisitoLegal").empty();
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("ObtenerRequisitoLegalPorEmpresa", "Documento")',
+                dataType: 'json',
+                data: { idEmpresa: $("#IdEmpresa").val() },
+                success: function (data) {
+                    $.each(data, function (i, data) {
+                        $("#IdRequisitoLegal").append('<option value="'
+                            + data.idRequisitoLegal + '">'
+                            + data.nombre + '</option>');
+                    });
+                }, complete: function (data) {
+                    $("#bodyTemplate").waitMe("hide");
+                },
+                error: function (ex) {
+                    alert('Failed to retrieve data.' + ex);
+                }
+            });
+            return false;
+        });
+
+    </script>
+
 }

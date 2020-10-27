@@ -13,7 +13,7 @@
 }
 
 @{
-    if (User.IsInRole(Perfiles.Gestor) || User.IsInRole(Perfiles.Administrador))
+    if (User.IsInRole(Perfiles.Gestor) || User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
     {
         <div class="row">
             <div class="col-lg-2 col-sm-4 col-xs-12">
@@ -39,9 +39,12 @@
                 <th>
                     @Html.DisplayNameFor(model => model.FirstOrDefault().Cantidad)
                 </th>
-                
+                <th>
+                    @Html.DisplayNameFor(model => model.FirstOrDefault().IdEmpresa)
+                </th>
+
                 @{
-                    if (User.IsInRole(Perfiles.Gestor) || User.IsInRole(Perfiles.Administrador))
+                    if (User.IsInRole(Perfiles.Gestor) || User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
                     {
                         <th>
                             Opciones
@@ -54,67 +57,72 @@
             @{
                 foreach (var item in Model)
                 {
-            <tr>
-                <td>
-                    <p class="font-12 text-left">@item.Nombre </p>
-                </td>
-                <td>
-                    <p class="font-12 text-left">@item.RequisitoLegal.Nombre </p>
-                </td>
-                @{
-                    if (item.Tipo > 0)
-                    {
-                        switch (item.Tipo)
-                        {
-                            case 1:
-                <td>
-                    <p class="font-12 text-left">D&iacute;as </p>
-                </td>                               
-                break;
-                            case 2:
-                <td>
-                    <p class="font-12 text-left">Meses </p>
-                </td>
-                                break;
-                            case 3:
-                <td>
-                    <p class="font-12 text-left">A&ntilde;os</p>
-                </td>
-                                break;
-                            default:
-                                break;
-                        }
+                        <tr>
+                            <td>
+                                <p class="font-12 text-left">@item.Nombre </p>
+                            </td>
+                            <td>
+                                <p class="font-12 text-left">@item.RequisitoLegal.Nombre </p>
+                            </td>
+                            @{
+                                if (item.Tipo > 0)
+                                {
+                                    switch (item.Tipo)
+                                    {
+                                        case 1:
+                                            <td>
+                                                <p class="font-12 text-left">D&iacute;as </p>
+                                            </td>
 
-                    }
-                    else
-                    {
-                <td>
-                    <p class="font-12 text-left">@item.Tipo </p>
+                                            break;
+                                        case 2:
+                                            <td>
+                                                <p class="font-12 text-left">Meses </p>
+                                            </td>
+                                            break;
+                                        case 3:
+                                            <td>
+                                                <p class="font-12 text-left">A&ntilde;os</p>
+                                            </td>
+                                            break;
+                                        default:
+                                            break;
+                                    }
 
-                </td>
-                    }
+                                }
+                                else
+                                {
+                                    <td>
+                                        <p class="font-12 text-left">@item.Tipo </p>
 
-                }
-                <td>
-                    <p class="font-12 text-left">@item.Cantidad </p>
-                </td>
-                @{
-                    if (User.IsInRole(Perfiles.Gestor) || User.IsInRole(Perfiles.Administrador))
-                    {
-                        <td>
-                            <a asp-action="Gestionar" onclick="MiApp.LoadingPanel.mostrarNotificacion('bodyTemplate', '')" class="font-12 text-left" asp-route-id="@item.IdDocumento">Editar</a> |
-                            <a href="javascript:void(0);" class="btnEliminar font-12 text-left" id="@item.IdDocumento" onclick="MiApp.Datatables.eventoBtnEliminar(this)" data-descripcion="&#191;Desea eliminar el Documento... ?">Eliminar</a>
-                        </td>
-                    }
-                }
-            </tr>
+                                    </td>
+                                }
+
+                            }
+                            <td>
+                                <p class="font-12 text-left">@item.Cantidad </p>
+                            </td>
+
+                            <td>
+                                <p class="font-12 text-left">@item.RequisitoLegal?.OrganismoControl?.Empresa?.Nombre </p>
+                            </td>
+                            @{
+                                if (User.IsInRole(Perfiles.Gestor) || User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
+                                {
+                                    <td>
+                                        <a asp-action="Gestionar" onclick="MiApp.LoadingPanel.mostrarNotificacion('bodyTemplate', '')" class="font-12 text-left" asp-route-id="@item.IdDocumento">Editar</a> |
+                                        <a href="javascript:void(0);" class="btnEliminar font-12 text-left" id="@item.IdDocumento" onclick="MiApp.Datatables.eventoBtnEliminar(this)" data-descripcion="&#191;Desea eliminar el Documento... ?">Eliminar</a>
+                                    </td>
+                                }
+                            }
+                        </tr>
                 }
             }
         </tbody>
     </table>
 </div>
 @{
-    if (User.IsInRole(Perfiles.Gestor) || User.IsInRole(Perfiles.Administrador))
+    if (User.IsInRole(Perfiles.Gestor) || User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
     {
         await Html.RenderPartialAsync("_Eliminar");
     }

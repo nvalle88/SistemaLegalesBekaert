@@ -24,7 +24,7 @@
         </div>
         <div class="col-md-10 col-xs-10">
             <div class="form-group">
-                <select asp-for="IdEmpresa" class="form-control show-tick" data-live-search="true" asp-items="ViewBag.Empresas"></select>
+                <select asp-for="IdEmpresa" class="js-example-basic-single form-control show-tick" data-live-search="true" asp-items="ViewBag.Empresas"></select>
                 <span asp-validation-for="IdEmpresa" class="text-danger"></span>
             </div>
         </div>
@@ -53,4 +53,10 @@
 
 @section Scripts{
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+    <script>
+        $(document).ready(function () {
+            $("select").select2();
+        });
+    </script>
 }
