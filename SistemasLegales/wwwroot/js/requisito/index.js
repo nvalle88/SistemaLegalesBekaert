@@ -3,6 +3,12 @@
     var semaforoAmarillo = false;
     var semaforoRojo = true;
 
+    this.eventoEmpresaControl = function () {
+        $("#IdEmpresa").on("change", function (e) {
+            partialViewListadoTabla();
+        });
+    };
+
     this.eventoOrganismoControl = function () {
         $("#IdOrganismoControl").on("change", function (e) {
             partialViewListadoTabla();
@@ -83,7 +89,10 @@
                     Documento: {
                         RequisitoLegal: {
                             IdOrganismoControl: $("#IdOrganismoControl").val(),
-                        }
+                            OrganismoControl: {
+                                IdEmpresa: $("#IdEmpresa").val(),
+                            },
+                        },
                     },
                     IdActorResponsableGestSeg: $("#IdActorResponsableGestSeg").val(),
                     IdProyecto: $("#IdProyecto").val(),
@@ -109,6 +118,7 @@
 
     return {
         init: function () {
+            eventoEmpresaControl();
             eventoOrganismoControl();
             eventoResponsableGestSeg();
             eventoProyecto();

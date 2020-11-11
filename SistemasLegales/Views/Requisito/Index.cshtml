@@ -18,7 +18,7 @@
 }
 
 @{
-    if (User.IsInRole(Perfiles.Administrador))
+    if (User.IsInRole(Perfiles.Administrador)|| User.IsInRole(Perfiles.AdministradorEmpresa))
     {
         <div class="row">
             <div class="col-lg-2 col-sm-4 col-xs-12">
@@ -50,5 +50,5 @@
     <script>
         var urlListadoResult = "@Url.Action("ListadoResult")";
     </script>
-    <script src="~/js/requisito/index.min.js"></script>
+    <script src="~/js/requisito/index.js"></script>
 }

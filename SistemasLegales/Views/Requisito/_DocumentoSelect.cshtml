@@ -3,7 +3,7 @@
     <div class="card-inner padding-0 margin-bottom-0">
         <label asp-for="IdDocumento"></label>
         <div class="demo margin-top-0">
-            @if (User.IsInRole("Administrador"))
+            @if (User.IsInRole("Administrador") || User.IsInRole("AdministradorEmpresa"))
             {
                 <select asp-for="IdDocumento" class="form-control show-tick" data-live-search="true" asp-items="ViewBag.Documento"></select>
 

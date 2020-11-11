@@ -138,7 +138,10 @@ namespace SistemasLegales.Models.Entidades
         [NotMapped]
         public int IdStatusAnterior { get; set; }
 
-        
+        [NotMapped]
+        [Display(Name = "Empresa")]
+        public int IdEmpresa { get; set; }
+
 
         public string ConformarMensaje(string url, Requisito requisito,TipoMensaje tipoMensaje,string usuario)
         {
@@ -207,10 +210,6 @@ namespace SistemasLegales.Models.Entidades
             return salida;
 
         }
-
-        
-
-
 
         public virtual ICollection<Accion> Accion { get; set; }
         public virtual ICollection<DocumentoRequisito> DocumentoRequisito { get; set; }

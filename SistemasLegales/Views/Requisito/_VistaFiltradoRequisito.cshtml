@@ -1,6 +1,16 @@
 @model Requisito
 
 <div class="row">
+
+    <div class="col-sm-12 col-md-4 col-xs-12 col-lg-4">
+        <div class="card-inner padding-0">
+            <label asp-for="Documento.RequisitoLegal.OrganismoControl.IdEmpresa"></label>
+            <div class="demo margin-top-0">
+                <select id="IdEmpresa" class="form-control show-tick" data-live-search="true" asp-items="ViewBag.Empresas"></select>
+            </div>
+        </div>
+    </div>
+
     <div class="col-sm-12 col-md-4 col-xs-12 col-lg-4">
         <div class="card-inner padding-0">
             <label asp-for="Documento.RequisitoLegal.IdOrganismoControl"></label>
@@ -68,7 +78,7 @@
     </div>
 
     @{
-        if (User.IsInRole(Perfiles.Administrador))
+        if (User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
         {
             <div class="col-sm-3 col-md-2 col-xs-12 col-lg-2">
                 <label>&nbsp;</label>

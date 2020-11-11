@@ -35,45 +35,131 @@ namespace SistemasLegales.Controllers
 
         private async Task<List<Requisito>> ListarRequisitos()
         {
-            return await db.Requisito
-                .Where(x=> x.Finalizado==false)
-                    .Include(c => c.Documento)
-                    .ThenInclude(c => c.RequisitoLegal.OrganismoControl)
-                    .Include(c => c.Documento)
-                    .Include(c => c.Ciudad)
-                    .Include(c => c.Proceso)
-                    .Include(c=> c.Proyecto)
-                    .OrderBy(c => c.IdDocumento)
-                    .ThenBy(c=> c.Documento.IdRequisitoLegal)
-                    .ThenBy(c=> c.Documento.RequisitoLegal.IdOrganismoControl)
-                    .ThenBy(c => c.IdCiudad)
-                    .ThenBy(c => c.IdProceso)
-                    .ThenBy(c=>c.Status)
-                    .ThenBy(c=> c.IdProyecto).OrderBy(x=>x.FechaCaducidad).ToListAsync();
+
+            IQueryable<Requisito> lista = db.Requisito
+                  .Where(x => x.Finalizado == false)
+                      .Include(c => c.Documento)
+                      .ThenInclude(c => c.RequisitoLegal.OrganismoControl)
+                      .Include(c => c.Documento)
+                      .ThenInclude(c => c.RequisitoLegal.OrganismoControl)
+                      .ThenInclude(c => c.Empresa)
+                      .Include(c => c.Documento)
+                      .Include(c => c.Ciudad)
+                      .Include(c => c.Proceso)
+                      .Include(c => c.Proyecto)
+                      .OrderBy(c => c.IdDocumento)
+                      .ThenBy(c => c.Documento.IdRequisitoLegal)
+                      .ThenBy(c => c.Documento.RequisitoLegal.IdOrganismoControl)
+                      .ThenBy(c => c.IdCiudad)
+                      .ThenBy(c => c.IdProceso)
+                      .ThenBy(c => c.Status)
+                      .ThenBy(c => c.IdProyecto).OrderBy(x => x.FechaCaducidad);
+
+            if (User.IsInRole(Perfiles.AdministradorEmpresa))
+            {
+                var UsuarioAutenticado = await _userManager.GetUserAsync(User);
+                lista = lista.Where(x => x.Documento.RequisitoLegal.OrganismoControl.IdEmpresa == UsuarioAutenticado.IdEmpresa);
+            }
+            return await lista.ToListAsync();
         }
 
         private async Task<List<Requisito>> ListarRequisitosFinalizado()
         {
-            return await db.Requisito
-                .Where(x => x.Finalizado == true)
-                    .Include(c => c.Documento)
-                    .ThenInclude(c => c.RequisitoLegal.OrganismoControl)
-                    .Include(c => c.Documento)
-                    .Include(c => c.Ciudad)
-                    .Include(c => c.Proceso)
-                    .Include(c => c.Proyecto)
-                    .OrderBy(c => c.IdDocumento)
-                    .ThenBy(c => c.Documento.IdRequisitoLegal)
-                    .ThenBy(c => c.Documento.RequisitoLegal.IdOrganismoControl)
-                    .ThenBy(c => c.IdCiudad)
-                    .ThenBy(c => c.IdProceso)
-                    .ThenBy(c => c.IdProyecto).OrderBy(x => x.FechaCaducidad).ToListAsync();
+            IQueryable<Requisito> lista = db.Requisito
+                 .Where(x => x.Finalizado == true)
+                     .Include(c => c.Documento)
+                     .ThenInclude(c => c.RequisitoLegal.OrganismoControl)
+                     .Include(c => c.Documento)
+                     .ThenInclude(c => c.RequisitoLegal.OrganismoControl)
+                     .ThenInclude(c => c.Empresa)
+                     .Include(c => c.Documento)
+                     .Include(c => c.Ciudad)
+                     .Include(c => c.Proceso)
+                     .Include(c => c.Proyecto)
+                     .OrderBy(c => c.IdDocumento)
+                     .ThenBy(c => c.Documento.IdRequisitoLegal)
+                     .ThenBy(c => c.Documento.RequisitoLegal.IdOrganismoControl)
+                     .ThenBy(c => c.IdCiudad)
+                     .ThenBy(c => c.IdProceso)
+                     .ThenBy(c => c.Status)
+                     .ThenBy(c => c.IdProyecto).OrderBy(x => x.FechaCaducidad);
+
+            if (User.IsInRole(Perfiles.AdministradorEmpresa))
+            {
+                var UsuarioAutenticado = await _userManager.GetUserAsync(User);
+                lista = lista.Where(x => x.Documento.RequisitoLegal.OrganismoControl.IdEmpresa == UsuarioAutenticado.IdEmpresa);
+            }
+            return await lista.ToListAsync();
         }
 
         private async Task<List<Accion>> ListarAcciones(int IdRequisito)
         {
-            return await db.Accion.Where(c => c.IdRequisito == IdRequisito).ToListAsync();                                     
+            return await db.Accion.Where(c => c.IdRequisito == IdRequisito).ToListAsync();
         }
+
+        [HttpPost]
+        [Authorize(Policy = "GerenciaGestion")]
+        public async Task<IActionResult> ListadoResult(Requisito requisito)
+        {
+            var listaRequisitos = new List<Requisito>();
+            try
+            {
+                var lista = await ListarRequisitos();
+
+                if (requisito?.Documento?.RequisitoLegal?.IdOrganismoControl != -1)
+                    lista = lista.Where(c => c.Documento.RequisitoLegal.IdOrganismoControl == requisito.Documento.RequisitoLegal.IdOrganismoControl).ToList();
+
+                if (requisito.IdActorResponsableGestSeg != -1)
+                    lista = lista.Where(c => c.IdActorResponsableGestSeg == requisito.IdActorResponsableGestSeg).ToList();
+
+                if (requisito.IdProyecto != -1)
+                    lista = lista.Where(c => c.IdProyecto == requisito.IdProyecto).ToList();
+
+                if (requisito?.Documento?.RequisitoLegal?.OrganismoControl?.IdEmpresa != -1)
+                {
+                    var idEmpresaSeleccionada = requisito?.Documento?.RequisitoLegal?.OrganismoControl?.IdEmpresa;
+                    lista = lista.Where(c => c.Documento.RequisitoLegal.OrganismoControl.IdEmpresa == idEmpresaSeleccionada).ToList();
+                }
+
+                if (requisito.IdStatus != -1)
+                    lista = lista.Where(c => c.IdStatus == requisito.IdStatus).ToList();
+
+                if (requisito.Anno != null)
+                    lista = lista.Where(c => c.FechaCumplimiento?.Year == requisito.Anno).ToList();
+
+                foreach (var item in lista)
+                {
+                    int semaforo = item.ObtenerSemaforo();
+                    var validarSemaforo = false;
+
+                    if (requisito.SemaforoVerde)
+                    {
+                        if (semaforo == 1)
+                            validarSemaforo = true;
+                    }
+                    if (requisito.SemaforoAmarillo)
+                    {
+                        if (semaforo == 2)
+                            validarSemaforo = true;
+                    }
+                    if (requisito.SemaforoRojo)
+                    {
+                        if (semaforo == 3)
+                            validarSemaforo = true;
+                    }
+
+                    if (validarSemaforo)
+                        listaRequisitos.Add(item);
+                }
+                return PartialView("_Listado", listaRequisitos);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
+        }
+
 
         [HttpPost]
         [Authorize(Policy = "GerenciaGestion")]
@@ -86,6 +172,13 @@ namespace SistemasLegales.Controllers
 
                 if (requisito?.Documento?.RequisitoLegal?.IdOrganismoControl != -1)
                     lista = lista.Where(c => c.Documento.RequisitoLegal.IdOrganismoControl == requisito.Documento.RequisitoLegal.IdOrganismoControl).ToList();
+
+                if (requisito?.Documento?.RequisitoLegal?.OrganismoControl?.IdEmpresa != -1)
+                {
+                    var idEmpresaSeleccionada = requisito?.Documento?.RequisitoLegal?.OrganismoControl?.IdEmpresa;
+                    lista = lista.Where(c => c.Documento.RequisitoLegal.OrganismoControl.IdEmpresa == idEmpresaSeleccionada).ToList();
+                }
+
 
                 if (requisito.IdActorResponsableGestSeg != -1)
                     lista = lista.Where(c => c.IdActorResponsableGestSeg == requisito.IdActorResponsableGestSeg).ToList();
@@ -111,7 +204,7 @@ namespace SistemasLegales.Controllers
         {
             try
             {
-                ViewBag.accion ="Editar";
+                ViewBag.accion = "Editar";
                 if (id != null)
                 {
                     var requisito = await db.Requisito.Include(c => c.DocumentoRequisito).Include(x => x.Accion).Include(c => c.Documento).ThenInclude(c => c.RequisitoLegal.OrganismoControl).FirstOrDefaultAsync(c => c.IdRequisito == id);
@@ -128,7 +221,7 @@ namespace SistemasLegales.Controllers
                     requisito.IdStatusAnterior = requisito.IdStatus;
                     return View(requisito);
                 }
-                return this.Redireccionar("Requisito","IndexFinalizado",$"{Mensaje.Error}|{Mensaje.ErrorCargarDatos}");
+                return this.Redireccionar("Requisito", "IndexFinalizado", $"{Mensaje.Error}|{Mensaje.ErrorCargarDatos}");
             }
             catch (Exception)
             {
@@ -151,26 +244,26 @@ namespace SistemasLegales.Controllers
                 ModelState.Remove("Documento.RequisitoLegal.Nombre");
                 if (ModelState.IsValid)
                 {
-                        miRequisito = await db.Requisito.FirstOrDefaultAsync(c => c.IdRequisito == requisito.IdRequisito);
-                        miRequisito.IdDocumento = requisito.IdDocumento;
-                        miRequisito.IdCiudad = requisito.IdCiudad;
-                        miRequisito.Criticidad = requisito.Criticidad;
-                        miRequisito.FactorIF = requisito.FactorIF;
-                        miRequisito.ICF = (9-requisito.FactorIF) * requisito.Criticidad;
-                        miRequisito.IdProceso = requisito.IdProceso;
-                        miRequisito.IdProyecto = requisito.IdProyecto;
-                        miRequisito.IdActorDuennoProceso = requisito.IdActorDuennoProceso;
-                        miRequisito.IdActorResponsableGestSeg = requisito.IdActorResponsableGestSeg;
-                        miRequisito.IdActorCustodioDocumento = requisito.IdActorCustodioDocumento;
-                        miRequisito.FechaCumplimiento = requisito.FechaCumplimiento;
-                        miRequisito.FechaCaducidad = requisito.FechaCaducidad;
-                        miRequisito.IdStatus = requisito.IdStatus;
-                        miRequisito.DuracionTramite = requisito.DuracionTramite;
-                        miRequisito.DiasNotificacion = requisito.DiasNotificacion;
-                        miRequisito.EmailNotificacion1 = requisito.EmailNotificacion1;
-                        miRequisito.EmailNotificacion2 = requisito.EmailNotificacion2;
-                        miRequisito.EsLegal = requisito.EsLegal;
-                        miRequisito.Observaciones = requisito.Observaciones;
+                    miRequisito = await db.Requisito.FirstOrDefaultAsync(c => c.IdRequisito == requisito.IdRequisito);
+                    miRequisito.IdDocumento = requisito.IdDocumento;
+                    miRequisito.IdCiudad = requisito.IdCiudad;
+                    miRequisito.Criticidad = requisito.Criticidad;
+                    miRequisito.FactorIF = requisito.FactorIF;
+                    miRequisito.ICF = (9 - requisito.FactorIF) * requisito.Criticidad;
+                    miRequisito.IdProceso = requisito.IdProceso;
+                    miRequisito.IdProyecto = requisito.IdProyecto;
+                    miRequisito.IdActorDuennoProceso = requisito.IdActorDuennoProceso;
+                    miRequisito.IdActorResponsableGestSeg = requisito.IdActorResponsableGestSeg;
+                    miRequisito.IdActorCustodioDocumento = requisito.IdActorCustodioDocumento;
+                    miRequisito.FechaCumplimiento = requisito.FechaCumplimiento;
+                    miRequisito.FechaCaducidad = requisito.FechaCaducidad;
+                    miRequisito.IdStatus = requisito.IdStatus;
+                    miRequisito.DuracionTramite = requisito.DuracionTramite;
+                    miRequisito.DiasNotificacion = requisito.DiasNotificacion;
+                    miRequisito.EmailNotificacion1 = requisito.EmailNotificacion1;
+                    miRequisito.EmailNotificacion2 = requisito.EmailNotificacion2;
+                    miRequisito.EsLegal = requisito.EsLegal;
+                    miRequisito.Observaciones = requisito.Observaciones;
                     await db.SaveChangesAsync();
 
                     var responseFile = true;
@@ -186,13 +279,13 @@ namespace SistemasLegales.Controllers
                             responseFile = await uploadFileService.UploadFiles(activoFijoDocumentoTransfer);
                         }
                     }
-                    await miRequisito.EnviarEmailNotificaionFinalizadoModificado(User.Identity.Name,_userManager, emailSender, db);
+                    await miRequisito.EnviarEmailNotificaionFinalizadoModificado(User.Identity.Name, _userManager, emailSender, db);
                     if (responseFile)
                     {
-                       
-                        return this.Redireccionar(  $"{Mensaje.Informacion}|{Mensaje.Satisfactorio}", "IndexFinalizado");
+
+                        return this.Redireccionar($"{Mensaje.Informacion}|{Mensaje.Satisfactorio}", "IndexFinalizado");
                     }
-                    return this.Redireccionar( $"{Mensaje.Aviso}|{Mensaje.ErrorUploadFiles}", "IndexFinalizado");
+                    return this.Redireccionar($"{Mensaje.Aviso}|{Mensaje.ErrorUploadFiles}", "IndexFinalizado");
                 }
                 return this.VistaError(requisito, $"{Mensaje.Error}|{Mensaje.ModeloInvalido}");
             }
@@ -208,18 +301,48 @@ namespace SistemasLegales.Controllers
             var lista = new List<Requisito>();
             try
             {
-                lista =await ListarRequisitosFinalizado();
-                var listadoOrganismoControl = await db.OrganismoControl.OrderBy(c => c.Nombre).ToListAsync();
-                listadoOrganismoControl.Insert(0, new OrganismoControl { IdOrganismoControl = -1, Nombre = "Todos" });
-                ViewData["OrganismoControl"] = new SelectList(listadoOrganismoControl, "IdOrganismoControl", "Nombre");
+                IQueryable<OrganismoControl> listadoOrganismoControl = db.OrganismoControl;
+                var resultadoOrganismoControl = new List<OrganismoControl>();
 
-                var listadoActores = await db.Actor.OrderBy(c => c.Nombres).ToListAsync();
-                listadoActores.Insert(0, new Actor { IdActor = -1, Nombres = "Todos" });
-                ViewData["Actor"] = new SelectList(listadoActores, "IdActor", "Nombres");
+                IQueryable<Actor> listadoActores = db.Actor;
+                var resultadoActores = new List<Actor>();
 
-                var listadoProyectos = await db.Proyecto.OrderBy(c => c.Nombre).ToListAsync();
-                listadoProyectos.Insert(0, new Proyecto { IdProyecto = -1, Nombre = "Todos" });
-                ViewData["Proyecto"] = new SelectList(listadoProyectos, "IdProyecto", "Nombre");
+                IQueryable<Proyecto> listadoProyectos = db.Proyecto;
+                var resultadoProyectos = new List<Proyecto>();
+
+                IQueryable<Empresa> listadoEmpresa = db.Empresa;
+                var resultadoEmpresa = new List<Empresa>();
+
+
+                if (User.IsInRole(Perfiles.AdministradorEmpresa))
+                {
+                    var UsuarioAutenticado = await _userManager.GetUserAsync(User);
+                    listadoOrganismoControl = listadoOrganismoControl.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa);
+                    listadoActores = listadoActores.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa);
+                    listadoProyectos = listadoProyectos.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa);
+                    listadoEmpresa = listadoEmpresa.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa);
+                }
+                resultadoOrganismoControl = await listadoOrganismoControl.OrderBy(c => c.Nombre).ToListAsync();
+                resultadoActores = await listadoActores.OrderBy(c => c.Nombres).ToListAsync();
+                resultadoProyectos = await listadoProyectos.OrderBy(c => c.Nombre).ToListAsync();
+                resultadoEmpresa = await listadoEmpresa.OrderBy(c => c.Nombre).ToListAsync();
+
+
+                resultadoOrganismoControl.Insert(0, new OrganismoControl { IdOrganismoControl = -1, Nombre = "Todos" });
+                ViewData["OrganismoControl"] = new SelectList(resultadoOrganismoControl, "IdOrganismoControl", "Nombre");
+
+                resultadoActores.Insert(0, new Actor { IdActor = -1, Nombres = "Todos" });
+                ViewData["Actor"] = new SelectList(resultadoActores, "IdActor", "Nombres");
+
+                // var listadoProyectos = await db.Proyecto.OrderBy(c => c.Nombre).ToListAsync();
+                resultadoProyectos.Insert(0, new Proyecto { IdProyecto = -1, Nombre = "Todos" });
+                ViewData["Proyecto"] = new SelectList(resultadoProyectos, "IdProyecto", "Nombre");
+
+                if (!User.IsInRole(Perfiles.AdministradorEmpresa))
+                    resultadoEmpresa.Insert(0, new Empresa { IdEmpresa = -1, Nombre = "Todos" });
+
+                ViewData["Empresas"] = new SelectList(resultadoEmpresa, "IdEmpresa", "Nombre");
+
 
 
             }
@@ -236,21 +359,52 @@ namespace SistemasLegales.Controllers
             var lista = new List<Requisito>();
             try
             {
-                var listadoOrganismoControl = await db.OrganismoControl.OrderBy(c => c.Nombre).ToListAsync();
-                listadoOrganismoControl.Insert(0, new OrganismoControl { IdOrganismoControl = -1, Nombre = "Todos" });
-                ViewData["OrganismoControl"] = new SelectList(listadoOrganismoControl, "IdOrganismoControl", "Nombre");
+                IQueryable<OrganismoControl> listadoOrganismoControl = db.OrganismoControl;
+                var resultadoOrganismoControl = new List<OrganismoControl>();
 
-                var listadoActores = await db.Actor.OrderBy(c => c.Nombres).ToListAsync();
-                listadoActores.Insert(0, new Actor { IdActor = -1, Nombres = "Todos" });
-                ViewData["Actor"] = new SelectList(listadoActores, "IdActor", "Nombres");
+                IQueryable<Actor> listadoActores = db.Actor;
+                var resultadoActores = new List<Actor>();
+
+                IQueryable<Proyecto> listadoProyectos = db.Proyecto;
+                var resultadoProyectos = new List<Proyecto>();
+
+                IQueryable<Empresa> listadoEmpresa = db.Empresa;
+                var resultadoEmpresa = new List<Empresa>();
+
+
+                if (User.IsInRole(Perfiles.AdministradorEmpresa))
+                {
+                    var UsuarioAutenticado = await _userManager.GetUserAsync(User);
+                    listadoOrganismoControl = listadoOrganismoControl.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa);
+                    listadoActores = listadoActores.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa);
+                    listadoProyectos = listadoProyectos.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa);
+                    listadoEmpresa = listadoEmpresa.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa);
+                }
+                resultadoOrganismoControl = await listadoOrganismoControl.OrderBy(c => c.Nombre).ToListAsync();
+                resultadoActores = await listadoActores.OrderBy(c => c.Nombres).ToListAsync();
+                resultadoProyectos = await listadoProyectos.OrderBy(c => c.Nombre).ToListAsync();
+                resultadoEmpresa = await listadoEmpresa.OrderBy(c => c.Nombre).ToListAsync();
+
+
+                resultadoOrganismoControl.Insert(0, new OrganismoControl { IdOrganismoControl = -1, Nombre = "Todos" });
+                ViewData["OrganismoControl"] = new SelectList(resultadoOrganismoControl, "IdOrganismoControl", "Nombre");
+
+                resultadoActores.Insert(0, new Actor { IdActor = -1, Nombres = "Todos" });
+                ViewData["Actor"] = new SelectList(resultadoActores, "IdActor", "Nombres");
 
                 var ListaStatus = await db.Status.ToListAsync();
                 ListaStatus.Insert(0, new Status { IdStatus = -1, Nombre = "Todos" });
                 ViewData["Status"] = new SelectList(ListaStatus, "IdStatus", "Nombre");
 
-                var listadoProyectos = await db.Proyecto.OrderBy(c => c.Nombre).ToListAsync();
-                listadoProyectos.Insert(0, new Proyecto { IdProyecto = -1, Nombre = "Todos" });
-                ViewData["Proyecto"] = new SelectList(listadoProyectos, "IdProyecto", "Nombre");
+                // var listadoProyectos = await db.Proyecto.OrderBy(c => c.Nombre).ToListAsync();
+                resultadoProyectos.Insert(0, new Proyecto { IdProyecto = -1, Nombre = "Todos" });
+                ViewData["Proyecto"] = new SelectList(resultadoProyectos, "IdProyecto", "Nombre");
+
+                if (!User.IsInRole(Perfiles.AdministradorEmpresa))
+                    resultadoEmpresa.Insert(0, new Empresa { IdEmpresa = -1, Nombre = "Todos" });
+
+                ViewData["Empresas"] = new SelectList(resultadoEmpresa, "IdEmpresa", "Nombre");
+
 
 
             }
@@ -295,11 +449,11 @@ namespace SistemasLegales.Controllers
                     TempData["Mensaje"] = $"{Mensaje.Informacion}|{Mensaje.Satisfactorio}";
                     return RedirectToAction("DetallesFinalizado", new { id = accionActualizar.IdRequisito });
                 }
-                return this.Redireccionar("Requisito","IndexFinalizado",$"{Mensaje.Error}|{Mensaje.RegistroNoEncontrado}");
+                return this.Redireccionar("Requisito", "IndexFinalizado", $"{Mensaje.Error}|{Mensaje.RegistroNoEncontrado}");
             }
             catch (Exception)
             {
-                return this.Redireccionar("Requisito","IndexFinalizado",$"{Mensaje.Error}|{Mensaje.ErrorCargarDatos}");
+                return this.Redireccionar("Requisito", "IndexFinalizado", $"{Mensaje.Error}|{Mensaje.ErrorCargarDatos}");
             }
         }
 
@@ -308,8 +462,8 @@ namespace SistemasLegales.Controllers
         {
             try
             {
-                var accion =await db.Accion.Where(x => x.IdAccion == id).Select(x => new Accion { Detalle = x.Detalle, Fecha = x.Fecha, IdRequisito = x.IdRequisito, IdAccion = x.IdAccion }).FirstOrDefaultAsync();
-                if (accion!=null)
+                var accion = await db.Accion.Where(x => x.IdAccion == id).Select(x => new Accion { Detalle = x.Detalle, Fecha = x.Fecha, IdRequisito = x.IdRequisito, IdAccion = x.IdAccion }).FirstOrDefaultAsync();
+                if (accion != null)
                 {
                     return View(accion);
                 }
@@ -328,7 +482,7 @@ namespace SistemasLegales.Controllers
             try
             {
                 var accionActualizar = await db.Accion.Where(x => x.IdAccion == accion.IdAccion).FirstOrDefaultAsync();
-                if (accionActualizar!=null)
+                if (accionActualizar != null)
                 {
                     accionActualizar.Fecha = accion.Fecha;
                     accionActualizar.Detalle = accion.Detalle;
@@ -355,17 +509,17 @@ namespace SistemasLegales.Controllers
                 requisitoFinalizar.Finalizado = true;
                 await db.SaveChangesAsync();
 
-                 var FechaCumplimiento = new DateTime?();
+                var FechaCumplimiento = new DateTime?();
                 var FechaCaducidad = new DateTime?();
-                
+
                 var documento = await db.Documento.Where(x => x.IdDocumento == requisitoFinalizar.IdDocumento).FirstOrDefaultAsync();
 
                 switch (documento.Tipo)
                 {
                     case 1:
                         {
-                           FechaCumplimiento= requisitoFinalizar.FechaCumplimiento?.AddDays((int)documento.Cantidad);
-                            FechaCaducidad= requisitoFinalizar.FechaCaducidad?.AddDays((int)documento.Cantidad);
+                            FechaCumplimiento = requisitoFinalizar.FechaCumplimiento?.AddDays((int)documento.Cantidad);
+                            FechaCaducidad = requisitoFinalizar.FechaCaducidad?.AddDays((int)documento.Cantidad);
                             break;
                         }
                     case 2:
@@ -409,7 +563,7 @@ namespace SistemasLegales.Controllers
                 await db.SaveChangesAsync();
 
                 await requisitoFinalizar.EnviarEmailNotificaionRequisitoFinalizado(emailSender, db);
-                await miRequisito.EnviarEmailNotificaionRequisitoCreacionAutomatica(_userManager,emailSender, db);
+                await miRequisito.EnviarEmailNotificaionRequisitoCreacionAutomatica(_userManager, emailSender, db);
 
                 return this.Redireccionar($"{Mensaje.Informacion}|{Mensaje.Satisfactorio}");
             }
@@ -422,20 +576,45 @@ namespace SistemasLegales.Controllers
             try
             {
                 ViewBag.accion = id == null ? "Crear" : "Editar";
-                ViewData["Ciudad"] = new SelectList(await db.Ciudad.OrderBy(c => c.Nombre).ToListAsync(), "IdCiudad", "Nombre");
-                ViewData["Proceso"] = new SelectList(await db.Proceso.OrderBy(c => c.Nombre).ToListAsync(), "IdProceso", "Nombre");
-                ViewData["Proyecto"] = new SelectList(await db.Proyecto.OrderBy(c => c.Nombre).ToListAsync(), "IdProyecto", "Nombre");
-                ViewData["Actor"] = new SelectList(await db.Actor.OrderBy(c => c.Nombres).ToListAsync(), "IdActor", "Nombres");
                 ViewData["Status"] = new SelectList(await db.Status.ToListAsync(), "IdStatus", "Nombre");
 
+                IQueryable<Ciudad> queryCiudad = db.Ciudad;
+                IQueryable<Proceso> queryProceso = db.Proceso;
+                IQueryable<Proyecto> queryProyecto = db.Proyecto; 
+                IQueryable<Actor> queryActor = db.Actor;
+
+                List<Ciudad> listaCiudad = new List<Ciudad>();
+                List<Proceso> listaProceso = new List<Proceso>();
+                List<Proyecto> listaProyecto = new List<Proyecto>();
+                List<Actor> listaActor = new List<Actor>();
+
+                if (User.IsInRole(Perfiles.AdministradorEmpresa))
+                {
+                    var UsuarioAutenticado = await _userManager.GetUserAsync(User);
+                    listaCiudad= await db.Ciudad.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombre).ToListAsync();
+                    listaProceso= await db.Proceso.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombre).ToListAsync();
+                    listaProyecto= await db.Proyecto.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombre).ToListAsync();
+                    listaActor= await db.Actor.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombres).ToListAsync();
+                    ViewData["Empresas"] = new SelectList(db.Empresa.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(x => x.Nombre).ToList(), "IdEmpresa", "Nombre");
+                }
+
+                else
+                {
+
+                    listaCiudad = await db.Ciudad.OrderBy(c => c.Nombre).ToListAsync();
+                    listaProceso= await db.Proceso.OrderBy(c => c.Nombre).ToListAsync();
+                    listaProyecto= await db.Proyecto.OrderBy(c => c.Nombre).ToListAsync();
+                    listaActor= await db.Actor.OrderBy(c => c.Nombres).ToListAsync();
+                    ViewData["Empresas"] = new SelectList(db.Empresa.OrderBy(x => x.Nombre).ToList(), "IdEmpresa", "Nombre");
+                }
 
                 if (id != null)
                 {
-                    var requisito = await db.Requisito.Include(c=> c.DocumentoRequisito).Include(x=>x.Accion).Include(c => c.Documento).ThenInclude(c => c.RequisitoLegal.OrganismoControl).FirstOrDefaultAsync(c => c.IdRequisito == id);
+                    var requisito = await db.Requisito.Include(c => c.DocumentoRequisito).Include(x => x.Accion).Include(c => c.Documento).ThenInclude(c => c.RequisitoLegal.OrganismoControl).FirstOrDefaultAsync(c => c.IdRequisito == id);
                     if (requisito == null)
                         return this.Redireccionar($"{Mensaje.Error}|{Mensaje.RegistroNoEncontrado}");
 
-                    if (requisito.Finalizado==true)
+                    if (requisito.Finalizado == true)
                     {
                         return this.Redireccionar($"{Mensaje.Informacion}|{Mensaje.RequisitoFinalizado}");
                     }
@@ -447,18 +626,47 @@ namespace SistemasLegales.Controllers
                     requisito.IdStatusAnterior = requisito.IdStatus;
                     return View(requisito);
                 }
-                ViewData["OrganismoControl"] = new SelectList(await db.OrganismoControl.OrderBy(c => c.Nombre).ToListAsync(), "IdOrganismoControl", "Nombre");
+
+                IQueryable<OrganismoControl> queryOrganismoControl = db.OrganismoControl;
+                var listaOrganismoControl = new List<OrganismoControl>();
+                if (User.IsInRole(Perfiles.AdministradorEmpresa))
+                {
+                    var UsuarioAutenticado = await _userManager.GetUserAsync(User);
+                    listaOrganismoControl = await queryOrganismoControl.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombre).ToListAsync();
+                }
+                else
+                {
+                    listaOrganismoControl = await queryOrganismoControl.OrderBy(c => c.Nombre).ToListAsync();
+                }
+
+                if ((ViewData["Empresas"] as SelectList).FirstOrDefault() != null)
+                {
+                    var idEmpresaInicial = int.Parse((ViewData["Empresas"] as SelectList).FirstOrDefault().Value);
+                    ViewData["OrganismoControl"] = new SelectList(listaOrganismoControl.Where(x => x.IdEmpresa == idEmpresaInicial), "IdOrganismoControl", "Nombre");
+                    ViewData["Ciudad"] = new SelectList(listaCiudad.Where(x => x.IdEmpresa == idEmpresaInicial), "IdCiudad", "Nombre");
+                    ViewData["Proceso"] = new SelectList(listaProceso.Where(x => x.IdEmpresa == idEmpresaInicial), "IdProceso", "Nombre");
+                    ViewData["Proyecto"] = new SelectList(listaProyecto.Where(x => x.IdEmpresa == idEmpresaInicial), "IdProyecto", "Nombre");
+                    ViewData["Actor"] = new SelectList(listaActor.Where(x => x.IdEmpresa == idEmpresaInicial), "IdActor", "Nombres");
+                }
+                else 
+                {
+                    ViewData["OrganismoControl"] = new SelectList(listaOrganismoControl, "IdOrganismoControl", "Nombre");
+                    ViewData["Ciudad"] = new SelectList(listaCiudad, "IdCiudad", "Nombre");
+                    ViewData["Proceso"] = new SelectList(listaProceso, "IdProceso", "Nombre");
+                    ViewData["Proyecto"] = new SelectList(listaProyecto, "IdProyecto", "Nombre");
+                    ViewData["Actor"] = new SelectList(listaActor, "IdActor", "Nombres");
+                }
+
                 ViewData["RequisitoLegal"] = await ObtenerSelectListRequisitoLegal((ViewData["OrganismoControl"] as SelectList).FirstOrDefault() != null ? int.Parse((ViewData["OrganismoControl"] as SelectList).FirstOrDefault().Value) : -1);
                 ViewData["Documento"] = await ObtenerSelectListDocumento((ViewData["RequisitoLegal"] as SelectList).FirstOrDefault() != null ? int.Parse((ViewData["RequisitoLegal"] as SelectList).FirstOrDefault().Value) : -1);
-                var requisitoNew = new Requisito { IdRequisito=0,IdStatusAnterior=-1,Accion=new List<Accion>()};
+                var requisitoNew = new Requisito { IdRequisito = 0, IdStatusAnterior = -1, Accion = new List<Accion>() };
                 return View(requisitoNew);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return this.Redireccionar($"{Mensaje.Error}|{Mensaje.ErrorCargarDatos}");
             }
         }
-
 
         [HttpPost]
         [Authorize(Policy = "Administracion")]
@@ -638,7 +846,7 @@ namespace SistemasLegales.Controllers
             try
             {
 
-                if (requisito.IdStatus==EstadoRequisito.Terminado && file==null)
+                if (requisito.IdStatus == EstadoRequisito.Terminado && file == null)
                 {
                     ViewData["OrganismoControl"] = new SelectList(await db.OrganismoControl.OrderBy(c => c.Nombre).ToListAsync(), "IdOrganismoControl", "Nombre");
                     ViewData["RequisitoLegal"] = await ObtenerSelectListRequisitoLegal(requisito?.Documento?.RequisitoLegal?.IdOrganismoControl ?? -1);
@@ -649,13 +857,13 @@ namespace SistemasLegales.Controllers
                     ViewData["Actor"] = new SelectList(await db.Actor.OrderBy(c => c.Nombres).ToListAsync(), "IdActor", "Nombres");
                     ViewData["Status"] = new SelectList(await db.Status.ToListAsync(), "IdStatus", "Nombre");
                     var requisitoSalida = await db.Requisito.Include(c => c.DocumentoRequisito).Include(x => x.Accion).Include(c => c.Documento).ThenInclude(c => c.RequisitoLegal.OrganismoControl).FirstOrDefaultAsync(c => c.IdRequisito == requisito.IdRequisito);
-                    var acciones =await db.Accion.Where(x => x.IdRequisito == requisito.IdRequisito).ToListAsync();
+                    var acciones = await db.Accion.Where(x => x.IdRequisito == requisito.IdRequisito).ToListAsync();
                     requisitoSalida.Accion = acciones;
                     return this.VistaError(requisitoSalida, $"{Mensaje.Error}|{Mensaje.CargarArchivoEstadoTerminado}");
                 }
 
                 Requisito miRequisito = new Requisito();
-                ViewBag.accion = requisito.IdRequisito == 0 ? "Crear" : "Editar";var tt = Request.Form;
+                ViewBag.accion = requisito.IdRequisito == 0 ? "Crear" : "Editar"; var tt = Request.Form;
                 ModelState.Remove("Documento.Nombre");
                 ModelState.Remove("Documento.Tipo");
                 ModelState.Remove("Documento.Cantidad");
@@ -688,12 +896,12 @@ namespace SistemasLegales.Controllers
                             EsLegal = requisito.EsLegal,
                             Observaciones = requisito.Observaciones,
                             NotificacionEnviada = false
-                            
+
                         };
 
                         db.Add(miRequisito);
                         nuevoRegistro = true;
-                        
+
                     }
                     else
                     {
@@ -735,7 +943,7 @@ namespace SistemasLegales.Controllers
                     }
 
 
-                    if (requisito.IdStatus != requisito.IdStatusAnterior && requisito.IdStatusAnterior==EstadoRequisito.Terminado)
+                    if (requisito.IdStatus != requisito.IdStatusAnterior && requisito.IdStatusAnterior == EstadoRequisito.Terminado)
                     {
                         var url = "";
                         if (requisito.IdRequisito == 0)
@@ -746,7 +954,7 @@ namespace SistemasLegales.Controllers
                         {
                             url = $"{this.Request.Scheme}://{this.Request.Host}/{Mensaje.CarpertaHost}{this.Request.Path}";
                         }
-                        await miRequisito.EnviarEmailNotificaionNoFinalizado( url, emailSender, db);
+                        await miRequisito.EnviarEmailNotificaionNoFinalizado(url, emailSender, db);
                     }
 
                     //if (requisito.IdStatus == EstadoRequisito.Terminado)
@@ -777,10 +985,10 @@ namespace SistemasLegales.Controllers
                         await miRequisito.EnviarEmailNotificaionRequisitoCreacion(url, emailSender, db);
                     }
 
-                    await miRequisito.EnviarEmailNotificaion(_userManager,emailSender, db);
-                    return this.Redireccionar(responseFile ? $"{Mensaje.Informacion}|{Mensaje.Satisfactorio}" : $"{Mensaje.Aviso}|{Mensaje.ErrorUploadFiles}", "Gestionar",new { id= miRequisito.IdRequisito } );
+                    await miRequisito.EnviarEmailNotificaion(_userManager, emailSender, db);
+                    return this.Redireccionar(responseFile ? $"{Mensaje.Informacion}|{Mensaje.Satisfactorio}" : $"{Mensaje.Aviso}|{Mensaje.ErrorUploadFiles}", "Gestionar", new { id = miRequisito.IdRequisito });
 
-                   // return this.Redireccionar(,responseFile ? $"{Mensaje.Informacion}|{Mensaje.Satisfactorio}" : $"{Mensaje.Aviso}|{Mensaje.ErrorUploadFiles}");
+                    // return this.Redireccionar(,responseFile ? $"{Mensaje.Informacion}|{Mensaje.Satisfactorio}" : $"{Mensaje.Aviso}|{Mensaje.ErrorUploadFiles}");
                 }
                 ViewData["OrganismoControl"] = new SelectList(await db.OrganismoControl.OrderBy(c => c.Nombre).ToListAsync(), "IdOrganismoControl", "Nombre");
                 ViewData["RequisitoLegal"] = await ObtenerSelectListRequisitoLegal(requisito?.Documento?.RequisitoLegal?.IdOrganismoControl ?? -1);
@@ -810,13 +1018,13 @@ namespace SistemasLegales.Controllers
                             .Include(c => c.Documento)
                             .Include(c => c.Ciudad)
                             .Include(c => c.Proceso)
-                            .Include(c=> c.Proyecto)
+                            .Include(c => c.Proyecto)
                             .Include(c => c.ActorDuennoProceso)
                             .Include(c => c.ActorResponsableGestSeg)
                             .Include(c => c.ActorCustodioDocumento)
                             .Include(c => c.Status)
-                            .Include(c=> c.DocumentoRequisito)
-                            .Include(c=> c.Accion)
+                            .Include(c => c.DocumentoRequisito)
+                            .Include(c => c.Accion)
                         .FirstOrDefaultAsync(c => c.IdRequisito == id);
                     if (requisito == null)
                         return this.Redireccionar($"{Mensaje.Error}|{Mensaje.RegistroNoEncontrado}");
@@ -898,12 +1106,14 @@ namespace SistemasLegales.Controllers
                 {
                     switch (requisito.Habilitado)
                     {
-                        case true : requisito.Habilitado = false;
-                                    break;
-                         case false: requisito.Habilitado = true;
+                        case true:
+                            requisito.Habilitado = false;
+                            break;
+                        case false:
+                            requisito.Habilitado = true;
                             break;
                     }
-                    
+
                     await db.SaveChangesAsync();
                     return this.Redireccionar($"{Mensaje.Informacion}|{Mensaje.Satisfactorio}");
                 }
@@ -915,74 +1125,13 @@ namespace SistemasLegales.Controllers
             }
         }
 
-       
-
-        [HttpPost]
-        [Authorize(Policy = "GerenciaGestion")]
-        public async Task<IActionResult> ListadoResult(Requisito requisito)
-        {
-            var listaRequisitos = new List<Requisito>();
-            try
-            {
-                var lista = await ListarRequisitos();
-
-                if (requisito?.Documento?.RequisitoLegal?.IdOrganismoControl != -1)
-                    lista = lista.Where(c => c.Documento.RequisitoLegal.IdOrganismoControl == requisito.Documento.RequisitoLegal.IdOrganismoControl).ToList();
-
-                if (requisito.IdActorResponsableGestSeg != -1)
-                    lista = lista.Where(c => c.IdActorResponsableGestSeg == requisito.IdActorResponsableGestSeg).ToList();
-
-                if (requisito.IdProyecto != -1)
-                    lista = lista.Where(c => c.IdProyecto == requisito.IdProyecto).ToList();
-
-
-                if (requisito.IdStatus != -1)
-                    lista = lista.Where(c => c.IdStatus == requisito.IdStatus).ToList();
-
-                if (requisito.Anno != null)
-                    lista = lista.Where(c => c.FechaCumplimiento?.Year == requisito.Anno).ToList();
-
-                foreach (var item in lista)
-                {
-                    int semaforo = item.ObtenerSemaforo();
-                    var validarSemaforo = false;
-
-                    if (requisito.SemaforoVerde)
-                    {
-                        if (semaforo == 1)
-                            validarSemaforo = true;
-                    }
-                    if (requisito.SemaforoAmarillo)
-                    {
-                        if (semaforo == 2)
-                            validarSemaforo = true;
-                    }
-                    if (requisito.SemaforoRojo)
-                    {
-                        if (semaforo == 3)
-                            validarSemaforo = true;
-                    }
-
-                    if (validarSemaforo)
-                        listaRequisitos.Add(item);
-                }
-                return PartialView("_Listado", listaRequisitos);
-
-            }
-            catch (Exception)
-            {
-                return StatusCode(500);
-            }
-        }
-
-
         [HttpPost]
         [Authorize(Policy = "Gestion")]
         public async Task<JsonResult> InsertarAcciones(string observaciones, int idRequisito, DateTime fechaAccion)
         {
             try
             {
-                var accion = new Accion {Detalle = observaciones, IdRequisito = idRequisito, Fecha = fechaAccion };
+                var accion = new Accion { Detalle = observaciones, IdRequisito = idRequisito, Fecha = fechaAccion };
                 await db.Accion.AddAsync(accion);
                 await db.SaveChangesAsync();
 
@@ -999,7 +1148,7 @@ namespace SistemasLegales.Controllers
 
         [HttpPost]
         [Authorize(Policy = "Administracion")]
-        public async Task<JsonResult> EliminarAccion(int idAccion,int idRequisito)
+        public async Task<JsonResult> EliminarAccion(int idAccion, int idRequisito)
         {
 
             var listaAcciones = new List<Accion>();
@@ -1032,7 +1181,7 @@ namespace SistemasLegales.Controllers
             catch (Exception)
             {
                 return StatusCode(400, "El archivo solicitado no está disponible, por favor comuníquese con el administrador para obtener  más información.");
-               
+
             }
         }
 
@@ -1041,13 +1190,13 @@ namespace SistemasLegales.Controllers
         {
             try
             {
-                var requisitoDocumeto =await db.DocumentoRequisito.Where(x => x.IdDocumentoRequisito == id).FirstOrDefaultAsync();
+                var requisitoDocumeto = await db.DocumentoRequisito.Where(x => x.IdDocumentoRequisito == id).FirstOrDefaultAsync();
                 var URL = requisitoDocumeto.Url;
-                var Eliminado= uploadFileService.DeleteFile(URL);
+                var Eliminado = uploadFileService.DeleteFile(URL);
                 var idRequisitoActual = requisitoDocumeto.IdRequisito;
                 db.DocumentoRequisito.Remove(requisitoDocumeto);
                 await db.SaveChangesAsync();
-                return this.Redireccionar( $"{Mensaje.Informacion}|{Mensaje.Satisfactorio}", "Gestionar", new { id = idRequisitoActual });
+                return this.Redireccionar($"{Mensaje.Informacion}|{Mensaje.Satisfactorio}", "Gestionar", new { id = idRequisitoActual });
             }
             catch (Exception)
             {
@@ -1061,13 +1210,30 @@ namespace SistemasLegales.Controllers
         {
             try
             {
-                var listaRequisitoLegal = idOrganismoControl != -1 ? await db.RequisitoLegal.Where(c => c.IdOrganismoControl == idOrganismoControl).Select(y=>new RequisitoLegal
-                { IdRequisitoLegal=y.IdRequisitoLegal,Nombre=y.Nombre.Length>100? y.Nombre.Substring(0,100).ToString()+" ...":y.Nombre}).ToListAsync() : new List<RequisitoLegal>();
+                var listaRequisitoLegal = idOrganismoControl != -1 ? await db.RequisitoLegal.Where(c => c.IdOrganismoControl == idOrganismoControl).Select(y => new RequisitoLegal
+                { IdRequisitoLegal = y.IdRequisitoLegal, Nombre = y.Nombre.Length > 100 ? y.Nombre.Substring(0, 100).ToString() + " ..." : y.Nombre }).ToListAsync() : new List<RequisitoLegal>();
                 return new SelectList(listaRequisitoLegal, "IdRequisitoLegal", "Nombre");
             }
             catch (Exception)
             {
                 return new SelectList(new List<RequisitoLegal>());
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> ObtenerOrganismoControlPorEmpresa(int idEmpresa)
+        {
+            try
+            {
+                var listaOrganismoControl = await db.OrganismoControl
+                    .Where(x => x.IdEmpresa == idEmpresa)
+                    .OrderBy(c => c.Nombre).ToListAsync();
+
+                return Json(listaOrganismoControl);
+            }
+            catch (Exception)
+            {
+                return new JsonResult(new List<OrganismoControl>());
             }
         }
 
@@ -1078,6 +1244,8 @@ namespace SistemasLegales.Controllers
             ViewBag.RequisitoLegal = await ObtenerSelectListRequisitoLegal(idOrganismoControl);
             return PartialView("_RequisitoLegalSelect", new Requisito());
         }
+
+
 
         [HttpPost]
         [Authorize(Policy = "Administracion")]
@@ -1093,8 +1261,8 @@ namespace SistemasLegales.Controllers
         {
             try
             {
-                var listaDocumento = idRequisitoLegal != -1 ? await db.Documento.Where(c=> c.IdRequisitoLegal == idRequisitoLegal)
-                                                                      .Select(y=> new Documento {IdDocumento=y.IdDocumento,Nombre=y.Nombre.Length>100 ? y.Nombre.Substring(0,100).ToString()+" ...":y.Nombre })  
+                var listaDocumento = idRequisitoLegal != -1 ? await db.Documento.Where(c => c.IdRequisitoLegal == idRequisitoLegal)
+                                                                      .Select(y => new Documento { IdDocumento = y.IdDocumento, Nombre = y.Nombre.Length > 100 ? y.Nombre.Substring(0, 100).ToString() + " ..." : y.Nombre })
                                                                       .ToListAsync() : new List<Documento>();
                 return new SelectList(listaDocumento, "IdDocumento", "Nombre");
             }
@@ -1111,6 +1279,92 @@ namespace SistemasLegales.Controllers
             ViewBag.Documento = await ObtenerSelectListDocumento(idRequisitoLegal);
             return PartialView("_DocumentoSelect", new Requisito());
         }
+
+        [HttpPost]
+        public async Task<JsonResult> ObtenerCiudadPorEmpresa(int idEmpresa)
+        {
+            try
+            {
+                var listaCiudad = await db.Ciudad
+                    .Where(x => x.IdEmpresa == idEmpresa)
+                    .OrderBy(c => c.Nombre).ToListAsync();
+
+                return Json(listaCiudad);
+            }
+            catch (Exception)
+            {
+                return new JsonResult(new List<Ciudad>());
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> ObtenerProcesoPorEmpresa(int idEmpresa)
+        {
+            try
+            {
+                var listaProceso = await db.Proceso
+                    .Where(x => x.IdEmpresa == idEmpresa)
+                    .OrderBy(c => c.Nombre).ToListAsync();
+
+                return Json(listaProceso);
+            }
+            catch (Exception)
+            {
+                return new JsonResult(new List<Proceso>());
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> ObtenerProyectoPorEmpresa(int idEmpresa)
+        {
+            try
+            {
+                var listaProyecto = await db.Proyecto
+                    .Where(x => x.IdEmpresa == idEmpresa)
+                    .OrderBy(c => c.Nombre).ToListAsync();
+
+                return Json(listaProyecto);
+            }
+            catch (Exception)
+            {
+                return new JsonResult(new List<Proyecto>());
+            }
+        }
+
+        public async Task<JsonResult> ObtenerActorPorEmpresa(int idEmpresa)
+        {
+            try
+            {
+                var listaActor = await db.Actor
+                    .Where(x => x.IdEmpresa == idEmpresa)
+                    .OrderBy(c => c.Nombres).ToListAsync();
+
+                return Json(listaActor);
+            }
+            catch (Exception)
+            {
+                return new JsonResult(new List<Actor>());
+            }
+        }
+       
+        public async Task<JsonResult> ObtenerRequisitoLegalPorOrganismoControl(int idOrganismoControl)
+        {
+            var listaRequisitoLegal = idOrganismoControl != -1 ? await db.RequisitoLegal.Where(c => c.IdOrganismoControl == idOrganismoControl).Select(y => new RequisitoLegal
+            { IdRequisitoLegal = y.IdRequisitoLegal, Nombre = y.Nombre.Length > 100 ? y.Nombre.Substring(0, 100).ToString() + " ..." : y.Nombre }).ToListAsync() : new List<RequisitoLegal>();
+            return Json(listaRequisitoLegal);
+        }
+
+        
+        public async Task<JsonResult> ObtenerDocumentoPorRequisitoLegal(int idRequisitoLegal)
+        {
+            var listaDocumento = idRequisitoLegal != -1 ? await db.Documento.Where(c => c.IdRequisitoLegal == idRequisitoLegal)
+                                                                      .Select(y => new Documento { IdDocumento = y.IdDocumento, Nombre = y.Nombre.Length > 100 ? y.Nombre.Substring(0, 100).ToString() + " ..." : y.Nombre })
+                                                                      .ToListAsync() : new List<Documento>();
+            return Json(listaDocumento);
+        }
+
+
+
         #endregion
     }
 }

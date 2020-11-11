@@ -44,7 +44,7 @@
             },
             complete: function () {
                 eventoRequisitoLegal();
-                MiApp.Select.init();
+                
                 $("#bodyTemplate").waitMe("hide");
             }
         });
