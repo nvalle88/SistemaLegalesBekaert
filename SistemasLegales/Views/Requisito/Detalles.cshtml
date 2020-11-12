@@ -13,7 +13,7 @@
     <link href="~/lib/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet" />
     <link href="~/lib/boootstrap-datepicker/bootstrap-datepicker3.min.css" rel="stylesheet" />
 }
-@{var adm = User.IsInRole("Administrador"); }
+@{var adm = User.IsInRole("Administrador") || User.IsInRole("AdministradorEmpresa"); }
 <input type="hidden" id="idRequisito" asp-for="IdRequisito" />
 <input type="hidden" id="idAdministrador" value="@adm.ToString().ToLower()" />
 <fieldset>
@@ -107,7 +107,7 @@
                             Detalle
                         </th>
                         @{
-                            if (User.IsInRole(Perfiles.Administrador))
+                            if (User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
                             {
                                 <th>Opciones</th>
                                 } 
@@ -128,7 +128,7 @@
                         </td>
 
                         @{
-                            if (User.IsInRole(Perfiles.Administrador))
+                            if (User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
                             {
                                 <td>
                                     <a href='../Editar/@item.IdAccion' onclick="MiApp.LoadingPanel.mostrarNotificacion('bodyTemplate', '')" class="font-12" title='Editar'>Editar</a> |

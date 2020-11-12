@@ -140,7 +140,7 @@ namespace SistemasLegales.Models.Entidades
 
         [NotMapped]
         [Display(Name = "Empresa")]
-        public int IdEmpresa { get; set; }
+        public int? IdEmpresa { get; set; }
 
 
         public string ConformarMensaje(string url, Requisito requisito,TipoMensaje tipoMensaje,string usuario)

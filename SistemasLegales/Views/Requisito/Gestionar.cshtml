@@ -477,7 +477,7 @@
 
 
     @{
-        if (User.IsInRole(Perfiles.Administrador))
+        if (User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
         {
             <div class="row">
                 <div class="col-sm-12 col-md-12 col-lg-12 col-xs-12">
@@ -528,7 +528,7 @@
                                         Detalle
                                     </th>
                                     @{
-                                        if (User.IsInRole(Perfiles.Administrador))
+                                        if (User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
                                         {
                                             <th>
                                                 Opciones
@@ -549,7 +549,7 @@
                                             @Html.DisplayFor(modelItem => item.Detalle)
                                         </td>
                                         @{
-                                            if (User.IsInRole(Perfiles.Administrador))
+                                            if (User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
                                             {
                                                 <td>
                                                     <a href='javascript:void (0)' title='Eliminar' onclick="EliminarAccion(@item.IdAccion)">Eliminar</a>
@@ -673,9 +673,9 @@
                     MiApp.Mensajes.mostrarNotificacion("error", "Ocurrió un error al cargar los requisitos legales, inténtelo nuevamente.");
                 },
                 complete: function () {
-
-                    obtenerRequisitoLegalPorOrganismoControl();
                     cargarObtenerCiudadPorEmpresa();
+                    obtenerRequisitoLegalPorOrganismoControl();
+                    
                 }
             });
         };
@@ -730,8 +730,8 @@
                 },
                 complete: function () {
                     //eventoRequisitoLegal();
-
                     $("#bodyTemplate").waitMe("hide");
+                    
                 }
             });
         };

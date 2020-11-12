@@ -45,7 +45,7 @@
             @{
                 foreach (var item in Model.OrderBy(x => x.FechaCaducidad))
                 {
-                    if (item.Habilitado || User.IsInRole(Perfiles.Administrador))
+                    if (item.Habilitado || User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
                     {
                         <tr>
 
@@ -92,13 +92,13 @@
                             <td>
                                 <a asp-action="Detalles" onclick="MiApp.LoadingPanel.mostrarNotificacion('bodyTemplate', '')" class="font-12" asp-route-id="@item.IdRequisito">Acciones</a>
                                 @{
-                                    if (User.IsInRole(Perfiles.Gestor) || User.IsInRole(Perfiles.Administrador))
+                                    if (User.IsInRole(Perfiles.Gestor) || User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
                                     {
                                         <br />
                                         <a asp-action="Gestionar" onclick="MiApp.LoadingPanel.mostrarNotificacion('bodyTemplate', '')" class="font-12" asp-route-id="@item.IdRequisito">Editar</a><br />
 
                                     }
-                                    if (User.IsInRole(Perfiles.Administrador))
+                                    if (User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
                                     {
                                         <a href="javascript:void(0);" class="btnCambiarHabilitar font-12" id="@item.IdRequisito" onclick="MiApp.Datatables.eventoBtnCambiarHabilitar(this)" data-descripcion="&#191;Desea cambiar el estado del Requisito... ?">
                                             @if (item.Habilitado)

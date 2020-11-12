@@ -35,7 +35,7 @@
 </div>
 
 @{
-    if (User.IsInRole(Perfiles.Administrador))
+    if (User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
     {
         await Html.RenderPartialAsync("_Eliminar");
         await Html.RenderPartialAsync("_CambiarHabilitar");
