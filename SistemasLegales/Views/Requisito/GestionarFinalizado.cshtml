@@ -15,7 +15,7 @@
     <link rel="stylesheet" type="text/css" href="~/lib/bootstrap-fileinput/css/fileinput.min.css">
 }
 
-@{var adm = User.IsInRole("Administrador"); }
+@{var adm = User.IsInRole("Administrador") || User.IsInRole("AdministradorEmpresa"); }
 <input type="hidden" id="idAdministrador" value="@adm.ToString().ToLower()" />
 <form asp-action="GestionarFinalizado" novalidate="novalidate" enctype="multipart/form-data">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -26,35 +26,82 @@
             <input type="hidden" asp-for="IdRequisito" />
         }
     }
-    <div class="row">
-        <div class="col-sm-12 col-md-3 col-lg-3 col-xs-12">
-            <div class="card-inner padding-0 margin-bottom-0">
-                <label asp-for="Documento.RequisitoLegal.IdOrganismoControl"></label>
-                <div class="demo margin-top-0">
-                    <select asp-for="Documento.RequisitoLegal.IdOrganismoControl" class="form-control show-tick" data-live-search="true" asp-items="ViewBag.OrganismoControl"></select>
-                </div>
-                <span asp-validation-for="Documento.RequisitoLegal.IdOrganismoControl" class="text-danger"></span>
+<div class="row">
+
+    <div class="col-sm-12 col-md-12 col-lg-12 col-xs-12">
+        <div class="card-inner padding-0 margin-bottom-0">
+            <label asp-for="IdEmpresa"></label>
+            <div class="demo margin-top-0">
+                <select asp-for="IdEmpresa" class="form-control show-tick" data-live-search="true" asp-items="ViewBag.Empresas"></select>
             </div>
+            <span asp-validation-for="IdEmpresa" class="text-danger"></span>
         </div>
-
-        <div id="divRequisitoLegal">
-            @{await Html.RenderPartialAsync("_RequisitoLegalSelect", Model);}
+    </div>
+    <div class="col-sm-12 col-md-3 col-lg-3 col-xs-12">
+        <div class="card-inner padding-0 margin-bottom-0">
+            <label asp-for="Documento.RequisitoLegal.IdOrganismoControl"></label>
+            <div class="demo margin-top-0">
+                <select asp-for="Documento.RequisitoLegal.IdOrganismoControl" class="form-control show-tick" data-live-search="true" asp-items="ViewBag.OrganismoControl"></select>
+            </div>
+            <span asp-validation-for="Documento.RequisitoLegal.IdOrganismoControl" class="text-danger"></span>
         </div>
+    </div>
 
-        <div id="divDocumento">
-            @{await Html.RenderPartialAsync("_DocumentoSelect", Model);}
-        </div>
-
+    <div id="divRequisitoLegal">
+        @*@{await Html.RenderPartialAsync("_RequisitoLegalSelect", Model);}*@
         <div class="col-sm-12 col-md-3 col-lg-3 col-xs-12">
             <div class="card-inner padding-0 margin-bottom-0">
-                <label asp-for="IdCiudad"></label>
+                <label asp-for="Documento.IdRequisitoLegal"></label>
                 <div class="demo margin-top-0">
-                    <select asp-for="IdCiudad" class="form-control show-tick" data-live-search="true" asp-items="ViewBag.Ciudad"></select>
+                    @if (User.IsInRole("Administrador") || User.IsInRole("AdministradorEmpresa"))
+                    {
+                        <select asp-for="Documento.IdRequisitoLegal" class="form-control show-tick" data-live-search="true" asp-items="ViewBag.RequisitoLegal"></select>
+
+
+                    }
+                    else
+                    {
+                        <select disabled asp-for="Documento.IdRequisitoLegal" class="form-control show-tick" data-live-search="true" asp-items="ViewBag.RequisitoLegal"></select>
+                        <input type="hidden" asp-for="Documento.IdRequisitoLegal" />
+                    }
                 </div>
-                <span asp-validation-for="IdCiudad" class="text-danger"></span>
+                <span asp-validation-for="Documento.IdRequisitoLegal" class="text-danger"></span>
             </div>
         </div>
     </div>
+
+    <div id="divDocumento">
+        @*@{await Html.RenderPartialAsync("_DocumentoSelect", Model);}*@
+        <div class="col-sm-12 col-md-3 col-lg-3 col-xs-12">
+            <div class="card-inner padding-0 margin-bottom-0">
+                <label asp-for="IdDocumento"></label>
+                <div class="demo margin-top-0">
+                    @if (User.IsInRole("Administrador") || User.IsInRole("AdministradorEmpresa"))
+                    {
+                        <select asp-for="IdDocumento" class="form-control show-tick" data-live-search="true" asp-items="ViewBag.Documento"></select>
+
+                    }
+                    else
+                    {
+                        <select disabled asp-for="IdDocumento" class="form-control show-tick" data-live-search="true" asp-items="ViewBag.Documento"></select>
+                        <input type="hidden" asp-for="IdDocumento" />
+                    }
+                </div>
+                <span asp-validation-for="IdDocumento" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-12 col-md-3 col-lg-3 col-xs-12">
+        <div class="card-inner padding-0 margin-bottom-0">
+            <label asp-for="IdCiudad"></label>
+            <div class="demo margin-top-0">
+                <select asp-for="IdCiudad" class="form-control show-tick" data-live-search="true" asp-items="ViewBag.Ciudad"></select>
+            </div>
+            <span asp-validation-for="IdCiudad" class="text-danger"></span>
+        </div>
+    </div>
+</div>
 
     <div class="row">
         <div class="col-sm-12 col-md-3 col-lg-3 col-xs-12">
@@ -207,8 +254,9 @@
                 <fieldset>
 
                     <legend>Acciones realizadas</legend>
-                    @if (User.IsInRole(Perfiles.Administrador)) {
-                    <div class="col-lg-12"> <a asp-action="DetallesFinalizado" onclick="MiApp.LoadingPanel.mostrarNotificacion('bodyTemplate', '')" asp-route-id="@Model.IdRequisito" class="btn btn-primary">Ir a Gestionar Acciones</a></div>
+                    @if (User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
+                    {
+                        <div class="col-lg-12"> <a asp-action="DetallesFinalizado" onclick="MiApp.LoadingPanel.mostrarNotificacion('bodyTemplate', '')" asp-route-id="@Model.IdRequisito" class="btn btn-primary">Ir a Gestionar Acciones</a></div>
                     }
                     <div class="table-responsive padding-15">
                         <table id="datatable-responsive" class="table" cellspacing="0">
@@ -221,7 +269,7 @@
                                         Detalle
                                     </th>
                                     @{
-                                        if (User.IsInRole(Perfiles.Administrador))
+                                        if (User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
                                         {
                                             <th>
                                                 Opciones
@@ -242,7 +290,7 @@
                                             @Html.DisplayFor(modelItem => item.Detalle)
                                         </td>
                                         @{
-                                            if (User.IsInRole(Perfiles.Administrador))
+                                            if (User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
                                             {
                                                 <td>
                                                     <a href='javascript:void (0)' title='Eliminar' onclick="EliminarAccion(@item.IdAccion)">Eliminar</a>
@@ -250,20 +298,20 @@
                                             }
                                         }
                                     </tr>
-                                            }
+                                }
                             </tbody>
                         </table>
                     </div>
                 </fieldset>
-                                                }
-                                            }
+            }
+        }
     }
     <fieldset>
-       
+
         <legend>Documentaci&oacute;n adicional</legend>
         <div class="row">
             @{
-                if (User.IsInRole(Perfiles.Administrador))
+                if (User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
                 {
 
                     <div class="col-md-12 col-xs-12 col-sm-12">
@@ -283,10 +331,10 @@
     </fieldset>
 
     <div class="row">
-        
+
         <div class="col-md-offset-5 col-xs-offset-6">
             @{
-                if (User.IsInRole(Perfiles.Administrador))
+                if (User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
                 {
                     <button type="submit" class="btn btn-primary ladda-button" data-style="expand-left" id="btn-guardar">
                         <span class="ladda-label" id="laddaSpanGuardar">ACEPTAR</span>
@@ -307,19 +355,233 @@
     <script src="~/js/moment/moment.js"></script>
     <script src="~/js/moment/moment-with-locales.js"></script>
     @{ await Html.RenderPartialAsync("_DatepickerPartial"); }
-    
+
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
     @{await Html.RenderPartialAsync("_FileInputScriptsPartial");}
-    <script>
+    @*<script>
         var urlRequisitoLegalSelectResult = "@Url.Action("RequisitoLegal_SelectResult")";
         var urlDocumentoSelectResult = "@Url.Action("Documento_SelectResult")";
-    </script>
+    </script>*@
     <script src="~/js/fileInput/fileInput.min.js"></script>
-    <script src="~/js/requisito/gestionar.min.js"></script>
+    @*<script src="~/js/requisito/gestionar.min.js"></script>*@
 
     <script type="text/javascript">
 
         var perfilAdmin = $("#idAdministrador").val();
+
+        $("#IdEmpresa").on("change", function (e) {
+            cargarObtenerOrganismoControlPorEmpresa();
+        });
+
+        $("#Documento_RequisitoLegal_IdOrganismoControl").on("change", function (e) {
+            obtenerRequisitoLegalPorOrganismoControl();
+        });
+
+        $("#Documento_IdRequisitoLegal").on("change", function (e) {
+            obtenerDocumentoPorRequisitoLegal();
+        });
+
+
+        this.cargarObtenerOrganismoControlPorEmpresa = function () {
+            MiApp.LoadingPanel.mostrarNotificacion("bodyTemplate", "Cargando requisitos ...");
+            var url = "@Url.Action("ObtenerOrganismoControlPorEmpresa","Requisito")"; ''
+            $("#Documento_RequisitoLegal_IdOrganismoControl").empty();
+            $.ajax({
+                url: url,
+                method: "POST",
+                data: { IdEmpresa: $("#IdEmpresa").val() },
+                success: function (data) {
+                    $.each(data, function (i, data) {
+                        $("#Documento_RequisitoLegal_IdOrganismoControl").append('<option value="'
+                            + data.idOrganismoControl + '">'
+                            + data.nombre + '</option>');
+                    });
+                },
+                error: function (errorMessage) {
+                    MiApp.Mensajes.mostrarNotificacion("error", "Ocurrió un error al cargar los requisitos legales, inténtelo nuevamente.");
+                },
+                complete: function () {
+                    cargarObtenerCiudadPorEmpresa();
+                    obtenerRequisitoLegalPorOrganismoControl();
+
+                }
+            });
+        };
+
+        this.obtenerRequisitoLegalPorOrganismoControl = function () {
+            MiApp.LoadingPanel.mostrarNotificacion("bodyTemplate", "Cargando requisitos legales...");
+
+            var url = "@Url.Action("ObtenerRequisitoLegalPorOrganismoControl", "Requisito")";
+            $("#Documento_IdRequisitoLegal").empty();
+            $.ajax({
+                url: url,
+                method: "POST",
+                data: { idOrganismoControl: $("#Documento_RequisitoLegal_IdOrganismoControl").val() },
+                success: function (data) {
+                    $.each(data, function (i, data) {
+                        $("#Documento_IdRequisitoLegal").append('<option value="'
+                            + data.idRequisitoLegal + '">'
+                            + data.nombre + '</option>');
+                    });
+                    //$("#divRequisitoLegal").html(data);
+                },
+                error: function (errorMessage) {
+                    MiApp.Mensajes.mostrarNotificacion("error", "Ocurrió un error al cargar los requisitos legales, inténtelo nuevamente.");
+                },
+                complete: function () {
+                    $("#bodyTemplate").waitMe("hide");
+                    obtenerDocumentoPorRequisitoLegal();
+                    //eventoOrganismoControl();
+                }
+            });
+        };
+
+        this.obtenerDocumentoPorRequisitoLegal = function () {
+            MiApp.LoadingPanel.mostrarNotificacion("bodyTemplate", "Cargando documentos...");
+            var url = "@Url.Action("ObtenerDocumentoPorRequisitoLegal", "Requisito")";
+            $("#IdDocumento").empty();
+            $.ajax({
+                url: url,
+                method: "POST",
+                data: { idRequisitoLegal: $("#Documento_IdRequisitoLegal").val() },
+                success: function (data) {
+                    $.each(data, function (i, data) {
+                        $("#IdDocumento").append('<option value="'
+                            + data.idDocumento + '">'
+                            + data.nombre + '</option>');
+                    });
+                    //$("#divDocumento").html(data);
+                },
+                error: function (errorMessage) {
+                    MiApp.Mensajes.mostrarNotificacion("error", "Ocurrió un error al cargar los documentos, inténtelo nuevamente.");
+                },
+                complete: function () {
+                    //eventoRequisitoLegal();
+                    $("#bodyTemplate").waitMe("hide");
+
+                }
+            });
+        };
+
+        this.cargarObtenerCiudadPorEmpresa = function () {
+            MiApp.LoadingPanel.mostrarNotificacion("bodyTemplate", "Cargando Ciudad ...");
+            $("#IdCiudad").empty();
+            var url ="@Url.Action("ObtenerCiudadPorEmpresa", "Requisito")";
+            $.ajax({
+                url: url,
+                method: "POST",
+                data: { IdEmpresa: $("#IdEmpresa").val() },
+                success: function (data) {
+                    $.each(data, function (i, data) {
+                        $("#IdCiudad").append('<option value="'
+                            + data.idCiudad + '">'
+                            + data.nombre + '</option>');
+                    });
+                },
+                error: function (errorMessage) {
+                    MiApp.Mensajes.mostrarNotificacion("error", "Ocurrió un error al cargar las ciudades, inténtelo nuevamente.");
+                },
+                complete: function () {
+                    $("#bodyTemplate").waitMe("hide");
+                    cargarObtenerProcesoPorEmpresa();
+                }
+            });
+        };
+
+        this.cargarObtenerProcesoPorEmpresa = function () {
+            MiApp.LoadingPanel.mostrarNotificacion("bodyTemplate", "Cargando Procesos ...");
+            $("#IdProceso").empty();
+            var url = "@Url.Action("ObtenerProcesoPorEmpresa", "Requisito")";
+            $.ajax({
+                url: url,
+                method: "POST",
+                data: { IdEmpresa: $("#IdEmpresa").val() },
+                success: function (data) {
+                    $.each(data, function (i, data) {
+                        $("#IdProceso").append('<option value="'
+                            + data.idProceso + '">'
+                            + data.nombre + '</option>');
+                    });
+                },
+                error: function (errorMessage) {
+                    MiApp.Mensajes.mostrarNotificacion("error", "Ocurrió un error al cargar los procesos, inténtelo nuevamente.");
+                },
+                complete: function () {
+                    $("#bodyTemplate").waitMe("hide");
+                    cargarObtenerProyectoPorEmpresa();
+                }
+            });
+        };
+
+        this.cargarObtenerProyectoPorEmpresa = function () {
+            MiApp.LoadingPanel.mostrarNotificacion("bodyTemplate", "Cargando Proyectos ...");
+            $("#IdProyecto").empty();
+            var url ="@Url.Action("ObtenerProyectoPorEmpresa", "Requisito")";
+            $.ajax({
+                url: url,
+                method: "POST",
+                data: { IdEmpresa: $("#IdEmpresa").val() },
+                success: function (data) {
+                    $.each(data, function (i, data) {
+                        $("#IdProyecto").append('<option value="'
+                            + data.idProyecto + '">'
+                            + data.nombre + '</option>');
+                    });
+                },
+                error: function (errorMessage) {
+                    MiApp.Mensajes.mostrarNotificacion("error", "Ocurrió un error al cargar los proyectos, inténtelo nuevamente.");
+                },
+                complete: function () {
+                    $("#bodyTemplate").waitMe("hide");
+                    cargarObtenerActorPorEmpresa();
+                }
+            });
+        };
+
+        this.cargarObtenerActorPorEmpresa = function () {
+            MiApp.LoadingPanel.mostrarNotificacion("bodyTemplate", "Cargando Actores ...");
+            var url = "@Url.Action("ObtenerActorPorEmpresa", "Requisito")";
+            $("#IdActorDuennoProceso").empty();
+            $("#IdActorResponsableGestSeg").empty();
+            $("#IdActorCustodioDocumento").empty();
+            $.ajax({
+                url: url,
+                method: "POST",
+                data: { IdEmpresa: $("#IdEmpresa").val() },
+                success: function (data) {
+                    $.each(data, function (i, data) {
+                        $("#IdActorDuennoProceso").append('<option value="'
+                            + data.idActor + '">'
+                            + data.nombres + '</option>');
+                    });
+
+                    $.each(data, function (i, data) {
+                        $("#IdActorResponsableGestSeg").append('<option value="'
+                            + data.idActor + '">'
+                            + data.nombres + '</option>');
+                    });
+                    $.each(data, function (i, data) {
+                        $("#IdActorCustodioDocumento").append('<option value="'
+                            + data.idActor + '">'
+                            + data.nombres + '</option>');
+                    });
+
+                },
+                error: function (errorMessage) {
+                    MiApp.Mensajes.mostrarNotificacion("error", "Ocurrió un error al cargar los actores, inténtelo nuevamente.");
+                },
+                complete: function () {
+                    $("#bodyTemplate").waitMe("hide");
+                }
+            });
+        };
+
+
+
+
+
+
+
         function EliminarAccion(valor)
         {
 

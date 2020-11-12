@@ -35,7 +35,7 @@
             @{
                 foreach (var item in Model)
                 {
-                    if ( User.IsInRole(Perfiles.Administrador)|| User.IsInRole(Perfiles.Gestor))
+                    if ( User.IsInRole(Perfiles.Administrador)|| User.IsInRole(Perfiles.Gestor) || User.IsInRole(Perfiles.AdministradorEmpresa))
                     {
                         <tr>
                             <td>
@@ -61,7 +61,7 @@
                             </td>
                             <td>
                                 @{
-                                    if (User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.Gestor))
+                                    if (User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.Gestor) || User.IsInRole(Perfiles.AdministradorEmpresa))
                                     {
 
                                         if (User.IsInRole(Perfiles.Gestor))

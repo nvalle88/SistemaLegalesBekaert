@@ -179,6 +179,11 @@ namespace SistemasLegales.Controllers
                     lista = lista.Where(c => c.Documento.RequisitoLegal.OrganismoControl.IdEmpresa == idEmpresaSeleccionada).ToList();
                 }
 
+                if (requisito?.Documento?.RequisitoLegal?.OrganismoControl?.IdEmpresa != -1)
+                {
+                    var idEmpresaSeleccionada = requisito?.Documento?.RequisitoLegal?.OrganismoControl?.IdEmpresa;
+                    lista = lista.Where(c => c.Documento.RequisitoLegal.OrganismoControl.IdEmpresa == idEmpresaSeleccionada).ToList();
+                }
 
                 if (requisito.IdActorResponsableGestSeg != -1)
                     lista = lista.Where(c => c.IdActorResponsableGestSeg == requisito.IdActorResponsableGestSeg).ToList();

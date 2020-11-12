@@ -13,11 +13,11 @@
     <link href="~/lib/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet" />
     <link href="~/lib/boootstrap-datepicker/bootstrap-datepicker3.min.css" rel="stylesheet" />
 }
-@{var adm = User.IsInRole("Administrador"); }
+@{var adm = User.IsInRole("Administrador") || User.IsInRole("AdministradorEmpresa"); }
 <input type="hidden" id="idRequisito" asp-for="IdRequisito" />
 <input type="hidden" id="idAdministrador" value="@adm.ToString().ToLower()" />
 <fieldset>
-    <div class="col-lg-6"> <a asp-action="GestionarFinalizado" onclick="MiApp.LoadingPanel.mostrarNotificacion('bodyTemplate', '')" asp-route-id="@Model.IdRequisito" class="btn btn-primary">Ir a @{if (User.IsInRole(Perfiles.Administrador)) { <text> Editar el </text> } else {<text>Detalle del</text> } } Requisito Hist&oacute;rico</a></div>
+    <div class="col-lg-6"> <a asp-action="GestionarFinalizado" onclick="MiApp.LoadingPanel.mostrarNotificacion('bodyTemplate', '')" asp-route-id="@Model.IdRequisito" class="btn btn-primary">Ir a @{if (User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa)) { <text> Editar el </text> } else {<text>Detalle del</text> } } Requisito Hist&oacute;rico</a></div>
     <div class="col-lg-6"> <a asp-action="IndexFinalizado" onclick="MiApp.LoadingPanel.mostrarNotificacion('bodyTemplate', '')" class="btn btn-primary pull-right">Ir a Listado de Requisitos Hist&oacute;ricos</a></div>
     <div class="col-12 margin-top-5">
         <div class="col-md-12 col-sm-12 col col-xs-12 col-lg-12">
@@ -65,7 +65,7 @@
 
 
 <fieldset>
-    @{if (User.IsInRole(Perfiles.Administrador))
+    @{if (User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
         {
             <section class="col col-lg-12">
 
@@ -110,7 +110,7 @@
                             Detalle
                         </th>
                         @{
-                            if (User.IsInRole(Perfiles.Administrador))
+                            if (User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
                             {
                                 <th>Opciones</th>
                             }
@@ -131,7 +131,7 @@
                             </td>
 
                             @{
-                                if (User.IsInRole(Perfiles.Administrador))
+                                if (User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
                                 {
                                     <td>
                                         <a href='../EditarFinalizado/@item.IdAccion' onclick="MiApp.LoadingPanel.mostrarNotificacion('bodyTemplate', '')" class="font-12" title='Editar'>Editar</a> |

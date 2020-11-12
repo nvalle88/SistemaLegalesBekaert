@@ -579,8 +579,6 @@
                     </div>
                 }
             }
-
-
         </div>
 
     </fieldset>
@@ -627,17 +625,17 @@
 
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
     @{await Html.RenderPartialAsync("_FileInputScriptsPartial");}
-    <script>
+    @*<script>
         var urlRequisitoLegalSelectResult = "@Url.Action("RequisitoLegal_SelectResult")";
         var urlDocumentoSelectResult = "@Url.Action("Documento_SelectResult")";
-    </script>
+    </script>*@
     <script src="~/js/fileInput/fileInput.min.js"></script>
     @*<script src="~/js/requisito/gestionar.min.js"></script>*@
     @*<script src="~/js/requisito/gestionar.js"></script>*@
 
 
 
-<script type="text/javascript">
+    <script type="text/javascript">
 
         var perfilAdmin = $("#idAdministrador").val();
 
@@ -654,7 +652,8 @@
             obtenerDocumentoPorRequisitoLegal();
         });
 
-    this.cargarObtenerOrganismoControlPorEmpresa = function () {
+
+        this.cargarObtenerOrganismoControlPorEmpresa = function () {
             MiApp.LoadingPanel.mostrarNotificacion("bodyTemplate", "Cargando requisitos ...");
             var url = "@Url.Action("ObtenerOrganismoControlPorEmpresa","Requisito")"; ''
             $("#Documento_RequisitoLegal_IdOrganismoControl").empty();
@@ -675,7 +674,7 @@
                 complete: function () {
                     cargarObtenerCiudadPorEmpresa();
                     obtenerRequisitoLegalPorOrganismoControl();
-                    
+
                 }
             });
         };
@@ -708,7 +707,6 @@
             });
         };
 
-
         this.obtenerDocumentoPorRequisitoLegal = function () {
             MiApp.LoadingPanel.mostrarNotificacion("bodyTemplate", "Cargando documentos...");
             var url = "@Url.Action("ObtenerDocumentoPorRequisitoLegal", "Requisito")";
@@ -731,12 +729,10 @@
                 complete: function () {
                     //eventoRequisitoLegal();
                     $("#bodyTemplate").waitMe("hide");
-                    
+
                 }
             });
         };
-
-
 
         this.cargarObtenerCiudadPorEmpresa = function () {
             MiApp.LoadingPanel.mostrarNotificacion("bodyTemplate", "Cargando Ciudad ...");
@@ -929,5 +925,5 @@
             }
 
         }
-</script>
+    </script>
 }
