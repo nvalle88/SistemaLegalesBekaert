@@ -27,10 +27,147 @@
     @{await Html.RenderPartialAsync("_DatatablesJSPartial");}
     @{await Html.RenderPartialAsync("_BootboxPartial");}
     @{ await Html.RenderPartialAsync("_DatepickerPartial"); }
-    
+
     <script src="~/js/jqueryDatatables/jqueryDatatables.min.js"></script>
     <script>
         var urlListadoResult = "@Url.Action("ListadoResultFinalizado")";
     </script>
-    <script src="~/js/requisito/indexFinalizado.js"></script>
+    @*<script src="~/js/requisito/indexFinalizado.js"></script>*@
+
+<script>
+
+        $("#IdEmpresa").on("change", function (e) {
+
+            cargarObtenerOrganismoControlPorEmpresa();
+        });
+
+        $("#IdOrganismoControl").on("change", function (e) {
+            partialViewListadoTabla();
+        });
+
+        $("#IdActorResponsableGestSeg").on("change", function (e) {
+            partialViewListadoTabla();
+        });
+
+        $("#IdProyecto").on("change", function (e) {
+            partialViewListadoTabla();
+        });
+
+        MiApp.DatePicker.fnCallbackChangeDatepicker = function () {
+            partialViewListadoTabla();
+        };
+
+        this.cargarObtenerOrganismoControlPorEmpresa = function () {
+            MiApp.LoadingPanel.mostrarNotificacion("bodyTemplate", "Cargando requisitos ...");
+            var url = "@Url.Action("ObtenerOrganismoControlPorEmpresa","Requisito")"; ''
+            $("#IdOrganismoControl").empty();
+            $.ajax({
+                url: url,
+                method: "POST",
+                data: { IdEmpresa: $("#IdEmpresa").val() },
+                success: function (data) {
+                    $("#IdOrganismoControl").append('<option value="-1">Todos</option>');
+                    $.each(data, function (i, data) {
+                        $("#IdOrganismoControl").append('<option value="'
+                            + data.idOrganismoControl + '">'
+                            + data.nombre + '</option>');
+                    });
+                },
+                error: function (errorMessage) {
+                    MiApp.Mensajes.mostrarNotificacion("error", "Ocurrió un error al cargar los requisitos legales, inténtelo nuevamente.");
+                },
+                complete: function () {
+                    cargarObtenerActorPorEmpresa();
+                }
+            });
+
+        };
+
+        this.cargarObtenerActorPorEmpresa = function () {
+            MiApp.LoadingPanel.mostrarNotificacion("bodyTemplate", "Cargando Actores ...");
+            var url = "@Url.Action("ObtenerActorPorEmpresa", "Requisito")";
+            $("#IdActorResponsableGestSeg").empty();
+            $.ajax({
+                url: url,
+                method: "POST",
+                data: { IdEmpresa: $("#IdEmpresa").val() },
+                success: function (data) {
+                    $("#IdActorResponsableGestSeg").append('<option value="-1">Todos</option>');
+                    $.each(data, function (i, data) {
+                        $("#IdActorResponsableGestSeg").append('<option value="'
+                            + data.idActor + '">'
+                            + data.nombres + '</option>');
+                    });
+                },
+                error: function (errorMessage) {
+                    MiApp.Mensajes.mostrarNotificacion("error", "Ocurrió un error al cargar los actores, inténtelo nuevamente.");
+                },
+                complete: function () {
+                    $("#bodyTemplate").waitMe("hide");
+                    cargarObtenerProyectoPorEmpresa();
+                    
+                }
+            });
+        };
+
+        this.cargarObtenerProyectoPorEmpresa = function () {
+            MiApp.LoadingPanel.mostrarNotificacion("bodyTemplate", "Cargando Proyectos ...");
+            $("#IdProyecto").empty();
+            var url ="@Url.Action("ObtenerProyectoPorEmpresa", "Requisito")";
+            $.ajax({
+                url: url,
+                method: "POST",
+                data: { IdEmpresa: $("#IdEmpresa").val() },
+                success: function (data) {
+                    $("#IdProyecto").append('<option value="-1">Todos</option>');
+                    $.each(data, function (i, data) {
+                        $("#IdProyecto").append('<option value="'
+                            + data.idProyecto + '">'
+                            + data.nombre + '</option>');
+                    });
+                },
+                error: function (errorMessage) {
+                    MiApp.Mensajes.mostrarNotificacion("error", "Ocurrió un error al cargar los proyectos, inténtelo nuevamente.");
+                },
+                complete: function () {
+                    $("#bodyTemplate").waitMe("hide");
+                    partialViewListadoTabla();
+                }
+            });
+        };
+
+        this.partialViewListadoTabla = function () {
+            MiApp.LoadingPanel.mostrarNotificacion("bodyTemplate", "Cargando datos...");
+            $.ajax({
+                url: urlListadoResult,
+                method: "POST",
+                data: {
+                    requisito: {
+                        Documento: {
+                            RequisitoLegal: {
+                                IdOrganismoControl: $("#IdOrganismoControl").val(),
+                                OrganismoControl: {
+                                    IdEmpresa: $("#IdEmpresa").val(),
+                                },
+                            }
+                        },
+                        IdActorResponsableGestSeg: $("#IdActorResponsableGestSeg").val(),
+                        IdProyecto: $("#IdProyecto").val(),
+                        Anno: $("#Anno").val(),
+                    }
+                },
+                success: function (data) {
+                    $("#divTablaListado").html(data);
+                    MiApp.Datatables.inicializarDatatable();
+                },
+                error: function (errorMessage) {
+                    MiApp.Mensajes.mostrarNotificacion("error", "Ocurrió un error al cargar los datos, inténtelo nuevamente.");
+                },
+                complete: function () {
+                    $("#bodyTemplate").waitMe("hide");
+                }
+            });
+        };
+
+</script>
 }

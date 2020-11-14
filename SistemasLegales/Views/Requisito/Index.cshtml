@@ -3,7 +3,7 @@
 @inject UserManager<ApplicationUser> UserManager
 
 @{
-    ViewData["Titulo"] = User.IsInRole(Perfiles.Gestor) || User.IsInRole(Perfiles.Administrador)? "GESTI\u00D3N DE REQUISITOS" : "ESTADO DE REQUISITOS";
+    ViewData["Titulo"] = User.IsInRole(Perfiles.Gestor) || User.IsInRole(Perfiles.Administrador) ? "GESTI\u00D3N DE REQUISITOS" : "ESTADO DE REQUISITOS";
     ViewData["Subtitulo"] = "LISTADO";
 
 }
@@ -18,11 +18,11 @@
 }
 
 @{
-    if (User.IsInRole(Perfiles.Administrador)|| User.IsInRole(Perfiles.AdministradorEmpresa))
+    if (User.IsInRole(Perfiles.Administrador) || User.IsInRole(Perfiles.AdministradorEmpresa))
     {
         <div class="row">
             <div class="col-lg-2 col-sm-4 col-xs-12">
-                <a asp-action="Gestionar"  onclick="MiApp.LoadingPanel.mostrarNotificacion('bodyTemplate', '')" class="btn btn-primary waves-effect">NUEVO</a>
+                <a asp-action="Gestionar" onclick="MiApp.LoadingPanel.mostrarNotificacion('bodyTemplate', '')" class="btn btn-primary waves-effect">NUEVO</a>
             </div>
         </div>
     }
@@ -50,5 +50,196 @@
     <script>
         var urlListadoResult = "@Url.Action("ListadoResult")";
     </script>
-    <script src="~/js/requisito/index.js"></script>
+    @*<script src="~/js/requisito/index.js"></script>*@
+
+
+    <script>
+
+        var semaforoVerde = false;
+        var semaforoAmarillo = false;
+        var semaforoRojo = true;
+
+        $("#IdEmpresa").on("change", function (e) {
+
+            cargarObtenerOrganismoControlPorEmpresa();
+        });
+
+        $("#IdOrganismoControl").on("change", function (e) {
+            partialViewListadoTabla();
+        });
+
+        $("#IdActorResponsableGestSeg").on("change", function (e) {
+            partialViewListadoTabla();
+        });
+
+        $("#IdProyecto").on("change", function (e) {
+            partialViewListadoTabla();
+        });
+
+        $("#IdStatus").on("change", function (e) {
+            partialViewListadoTabla();
+        });
+
+        MiApp.DatePicker.fnCallbackChangeDatepicker = function () {
+            partialViewListadoTabla();
+        };
+
+        this.cargarObtenerOrganismoControlPorEmpresa = function () {
+            MiApp.LoadingPanel.mostrarNotificacion("bodyTemplate", "Cargando requisitos ...");
+            var url = "@Url.Action("ObtenerOrganismoControlPorEmpresa","Requisito")"; ''
+            $("#IdOrganismoControl").empty();
+            $.ajax({
+                url: url,
+                method: "POST",
+                data: { IdEmpresa: $("#IdEmpresa").val() },
+                success: function (data) {
+                    $("#IdOrganismoControl").append('<option value="-1">Todos</option>');
+                    $.each(data, function (i, data) {
+                        $("#IdOrganismoControl").append('<option value="'
+                            + data.idOrganismoControl + '">'
+                            + data.nombre + '</option>');
+                    });
+                },
+                error: function (errorMessage) {
+                    MiApp.Mensajes.mostrarNotificacion("error", "Ocurrió un error al cargar los requisitos legales, inténtelo nuevamente.");
+                },
+                complete: function () {
+                    cargarObtenerActorPorEmpresa();
+                }
+            });
+
+        };
+
+        this.cargarObtenerActorPorEmpresa = function () {
+            MiApp.LoadingPanel.mostrarNotificacion("bodyTemplate", "Cargando Actores ...");
+            var url = "@Url.Action("ObtenerActorPorEmpresa", "Requisito")";
+            $("#IdActorResponsableGestSeg").empty();
+            $.ajax({
+                url: url,
+                method: "POST",
+                data: { IdEmpresa: $("#IdEmpresa").val() },
+                success: function (data) {
+                    $("#IdActorResponsableGestSeg").append('<option value="-1">Todos</option>');
+                    $.each(data, function (i, data) {
+                        $("#IdActorResponsableGestSeg").append('<option value="'
+                            + data.idActor + '">'
+                            + data.nombres + '</option>');
+                    });
+                },
+                error: function (errorMessage) {
+                    MiApp.Mensajes.mostrarNotificacion("error", "Ocurrió un error al cargar los actores, inténtelo nuevamente.");
+                },
+                complete: function () {
+                    $("#bodyTemplate").waitMe("hide");
+                    cargarObtenerProyectoPorEmpresa();
+
+                }
+            });
+        };
+
+        this.cargarObtenerProyectoPorEmpresa = function () {
+            MiApp.LoadingPanel.mostrarNotificacion("bodyTemplate", "Cargando Proyectos ...");
+            $("#IdProyecto").empty();
+            var url ="@Url.Action("ObtenerProyectoPorEmpresa", "Requisito")";
+            $.ajax({
+                url: url,
+                method: "POST",
+                data: { IdEmpresa: $("#IdEmpresa").val() },
+                success: function (data) {
+                    $("#IdProyecto").append('<option value="-1">Todos</option>');
+                    $.each(data, function (i, data) {
+                        $("#IdProyecto").append('<option value="'
+                            + data.idProyecto + '">'
+                            + data.nombre + '</option>');
+                    });
+                },
+                error: function (errorMessage) {
+                    MiApp.Mensajes.mostrarNotificacion("error", "Ocurrió un error al cargar los proyectos, inténtelo nuevamente.");
+                },
+                complete: function () {
+                    $("#bodyTemplate").waitMe("hide");
+                    partialViewListadoTabla();
+                }
+            });
+        };
+
+        this.checkUnCheckSemaforo = function (idSemaforo, checkUncheck) {
+            if (checkUncheck == true) {
+
+                $("#semaforo" + idSemaforo).addClass("fa");
+                $("#semaforo" + idSemaforo).addClass("fa-lg");
+                $("#semaforo" + idSemaforo).addClass("fa-check");
+            }
+            else {
+                $("#semaforo" + idSemaforo).removeClass("fa");
+                $("#semaforo" + idSemaforo).removeClass("fa-lg");
+                $("#semaforo" + idSemaforo).removeClass("fa-check");
+            }
+        }
+
+
+        $(".semaforo").on("click", function (e) {
+            var semaforo = $(e.currentTarget);
+            var idSemaforo = semaforo.data("semaforo");
+
+
+            switch (idSemaforo) {
+                case 1: {
+                    semaforoVerde = !semaforoVerde;
+                    checkUnCheckSemaforo(idSemaforo, semaforoVerde);
+                    break;
+                }
+                case 2: {
+                    semaforoAmarillo = !semaforoAmarillo;
+                    checkUnCheckSemaforo(idSemaforo, semaforoAmarillo);
+                    break;
+                }
+                case 3: {
+                    semaforoRojo = !semaforoRojo;
+                    checkUnCheckSemaforo(idSemaforo, semaforoRojo);
+                    break;
+                }
+            }
+            partialViewListadoTabla();
+        });
+
+
+        this.partialViewListadoTabla = function () {
+            MiApp.LoadingPanel.mostrarNotificacion("bodyTemplate", "Cargando datos...");
+            $.ajax({
+                url: urlListadoResult,
+                method: "POST",
+                data: {
+                    requisito: {
+                        Documento: {
+                            RequisitoLegal: {
+                                IdOrganismoControl: $("#IdOrganismoControl").val(),
+                                OrganismoControl: {
+                                    IdEmpresa: $("#IdEmpresa").val(),
+                                },
+                            },
+                        },
+                        IdActorResponsableGestSeg: $("#IdActorResponsableGestSeg").val(),
+                        IdProyecto: $("#IdProyecto").val(),
+                        Anno: $("#Anno").val(),
+                        IdStatus: $("#IdStatus").val(),
+                        SemaforoVerde: semaforoVerde,
+                        SemaforoAmarillo: semaforoAmarillo,
+                        SemaforoRojo: semaforoRojo
+                    }
+                },
+                success: function (data) {
+                    $("#divTablaListado").html(data);
+                    MiApp.Datatables.inicializarDatatable();
+                },
+                error: function (errorMessage) {
+                    MiApp.Mensajes.mostrarNotificacion("error", "Ocurrió un error al cargar los datos, inténtelo nuevamente.");
+                },
+                complete: function () {
+                    $("#bodyTemplate").waitMe("hide");
+                }
+            });
+        };
+
+    </script>
 }

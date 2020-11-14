@@ -203,6 +203,120 @@ namespace SistemasLegales.Controllers
             }
         }
 
+        [Authorize(Policy = "Gestion")]
+        public async Task<IActionResult> Gestionar(int? id)
+        {
+            try
+            {
+                ViewBag.accion = id == null ? "Crear" : "Editar";
+                ViewData["Status"] = new SelectList(await db.Status.ToListAsync(), "IdStatus", "Nombre");
+
+                IQueryable<Ciudad> queryCiudad = db.Ciudad;
+                IQueryable<Proceso> queryProceso = db.Proceso;
+                IQueryable<Proyecto> queryProyecto = db.Proyecto;
+                IQueryable<Actor> queryActor = db.Actor;
+                IQueryable<Empresa> queryEmpresa = db.Empresa;
+
+                List<Ciudad> listaCiudad = new List<Ciudad>();
+                List<Proceso> listaProceso = new List<Proceso>();
+                List<Proyecto> listaProyecto = new List<Proyecto>();
+                List<Actor> listaActor = new List<Actor>();
+                List<Empresa> listaEmpresa = new List<Empresa>();
+
+                if (User.IsInRole(Perfiles.AdministradorEmpresa))
+                {
+                    var UsuarioAutenticado = await _userManager.GetUserAsync(User);
+                    listaCiudad = await db.Ciudad.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombre).ToListAsync();
+                    listaProceso = await db.Proceso.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombre).ToListAsync();
+                    listaProyecto = await db.Proyecto.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombre).ToListAsync();
+                    listaActor = await db.Actor.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombres).ToListAsync();
+                    listaEmpresa = await db.Empresa.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(x => x.Nombre).ToListAsync();
+                }
+
+                else
+                {
+
+                    listaCiudad = await db.Ciudad.OrderBy(c => c.Nombre).ToListAsync();
+                    listaProceso = await db.Proceso.OrderBy(c => c.Nombre).ToListAsync();
+                    listaProyecto = await db.Proyecto.OrderBy(c => c.Nombre).ToListAsync();
+                    listaActor = await db.Actor.OrderBy(c => c.Nombres).ToListAsync();
+                    listaEmpresa = await db.Empresa.OrderBy(x => x.Nombre).ToListAsync();
+                }
+
+
+                IQueryable<OrganismoControl> queryOrganismoControl = db.OrganismoControl;
+                var listaOrganismoControl = new List<OrganismoControl>();
+                if (User.IsInRole(Perfiles.AdministradorEmpresa))
+                {
+                    var UsuarioAutenticado = await _userManager.GetUserAsync(User);
+                    listaOrganismoControl = await queryOrganismoControl.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombre).ToListAsync();
+                }
+                else
+                {
+                    listaOrganismoControl = await queryOrganismoControl.OrderBy(c => c.Nombre).ToListAsync();
+                }
+
+
+                if (id != null)
+                {
+                    var requisito = await db.Requisito.Include(c => c.DocumentoRequisito).Include(x => x.Accion).Include(c => c.Documento).ThenInclude(c => c.RequisitoLegal.OrganismoControl).FirstOrDefaultAsync(c => c.IdRequisito == id);
+                    if (requisito == null)
+                        return this.Redireccionar($"{Mensaje.Error}|{Mensaje.RegistroNoEncontrado}");
+
+                    if (requisito.Finalizado == true)
+                    {
+                        return this.Redireccionar($"{Mensaje.Informacion}|{Mensaje.RequisitoFinalizado}");
+                    }
+
+
+                    ViewData["Empresas"] = new SelectList(listaEmpresa.OrderBy(x => x.Nombre).ToList(), "IdEmpresa", "Nombre", requisito.Documento.RequisitoLegal.OrganismoControl.IdEmpresa);
+                    requisito.IdEmpresa = requisito.Documento.RequisitoLegal.OrganismoControl.IdEmpresa ?? -1;
+
+                    ViewData["OrganismoControl"] = new SelectList(listaOrganismoControl.Where(x => x.IdEmpresa == requisito.IdEmpresa), "IdOrganismoControl", "Nombre");
+                    ViewData["Ciudad"] = new SelectList(listaCiudad.Where(x => x.IdEmpresa == requisito.IdEmpresa), "IdCiudad", "Nombre");
+                    ViewData["Proceso"] = new SelectList(listaProceso.Where(x => x.IdEmpresa == requisito.IdEmpresa), "IdProceso", "Nombre");
+                    ViewData["Proyecto"] = new SelectList(listaProyecto.Where(x => x.IdEmpresa == requisito.IdEmpresa), "IdProyecto", "Nombre");
+                    ViewData["Actor"] = new SelectList(listaActor.Where(x => x.IdEmpresa == requisito.IdEmpresa), "IdActor", "Nombres");
+
+
+                    //ViewData["OrganismoControl"] = new SelectList(await db.OrganismoControl.OrderBy(c => c.Nombre).ToListAsync(), "IdOrganismoControl", "Nombre", requisito.Documento.RequisitoLegal.IdOrganismoControl);
+                    ViewData["RequisitoLegal"] = await ObtenerSelectListRequisitoLegal(requisito?.Documento?.RequisitoLegal?.IdOrganismoControl ?? -1);
+                    ViewData["Documento"] = await ObtenerSelectListDocumento(requisito?.Documento?.IdRequisitoLegal ?? -1);
+                    requisito.IdStatusAnterior = requisito.IdStatus;
+                    return View(requisito);
+                }
+
+
+                ViewData["Empresas"] = new SelectList(listaEmpresa.OrderBy(x => x.Nombre).ToList(), "IdEmpresa", "Nombre");
+
+                if ((ViewData["Empresas"] as SelectList).FirstOrDefault() != null)
+                {
+                    var idEmpresaInicial = int.Parse((ViewData["Empresas"] as SelectList).FirstOrDefault().Value);
+                    ViewData["OrganismoControl"] = new SelectList(listaOrganismoControl.Where(x => x.IdEmpresa == idEmpresaInicial), "IdOrganismoControl", "Nombre");
+                    ViewData["Ciudad"] = new SelectList(listaCiudad.Where(x => x.IdEmpresa == idEmpresaInicial), "IdCiudad", "Nombre");
+                    ViewData["Proceso"] = new SelectList(listaProceso.Where(x => x.IdEmpresa == idEmpresaInicial), "IdProceso", "Nombre");
+                    ViewData["Proyecto"] = new SelectList(listaProyecto.Where(x => x.IdEmpresa == idEmpresaInicial), "IdProyecto", "Nombre");
+                    ViewData["Actor"] = new SelectList(listaActor.Where(x => x.IdEmpresa == idEmpresaInicial), "IdActor", "Nombres");
+                }
+                else
+                {
+                    ViewData["OrganismoControl"] = new SelectList(listaOrganismoControl, "IdOrganismoControl", "Nombre");
+                    ViewData["Ciudad"] = new SelectList(listaCiudad, "IdCiudad", "Nombre");
+                    ViewData["Proceso"] = new SelectList(listaProceso, "IdProceso", "Nombre");
+                    ViewData["Proyecto"] = new SelectList(listaProyecto, "IdProyecto", "Nombre");
+                    ViewData["Actor"] = new SelectList(listaActor, "IdActor", "Nombres");
+                }
+
+                ViewData["RequisitoLegal"] = await ObtenerSelectListRequisitoLegal((ViewData["OrganismoControl"] as SelectList).FirstOrDefault() != null ? int.Parse((ViewData["OrganismoControl"] as SelectList).FirstOrDefault().Value) : -1);
+                ViewData["Documento"] = await ObtenerSelectListDocumento((ViewData["RequisitoLegal"] as SelectList).FirstOrDefault() != null ? int.Parse((ViewData["RequisitoLegal"] as SelectList).FirstOrDefault().Value) : -1);
+                var requisitoNew = new Requisito { IdRequisito = 0, IdStatusAnterior = -1, Accion = new List<Accion>() };
+                return View(requisitoNew);
+            }
+            catch (Exception ex)
+            {
+                return this.Redireccionar($"{Mensaje.Error}|{Mensaje.ErrorCargarDatos}");
+            }
+        }
 
         [Authorize(Policy = "GerenciaGestion")]
         public async Task<IActionResult> GestionarFinalizado(int? id)
@@ -210,21 +324,77 @@ namespace SistemasLegales.Controllers
             try
             {
                 ViewBag.accion = "Editar";
+
+                ViewData["Status"] = new SelectList(await db.Status.ToListAsync(), "IdStatus", "Nombre");
+
+                IQueryable<Ciudad> queryCiudad = db.Ciudad;
+                IQueryable<Proceso> queryProceso = db.Proceso;
+                IQueryable<Proyecto> queryProyecto = db.Proyecto;
+                IQueryable<Actor> queryActor = db.Actor;
+                IQueryable<Empresa> queryEmpresa = db.Empresa;
+
+                List<Ciudad> listaCiudad = new List<Ciudad>();
+                List<Proceso> listaProceso = new List<Proceso>();
+                List<Proyecto> listaProyecto = new List<Proyecto>();
+                List<Actor> listaActor = new List<Actor>();
+                List<Empresa> listaEmpresa = new List<Empresa>();
+
+
+                if (User.IsInRole(Perfiles.AdministradorEmpresa))
+                {
+                    var UsuarioAutenticado = await _userManager.GetUserAsync(User);
+                    listaCiudad = await db.Ciudad.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombre).ToListAsync();
+                    listaProceso = await db.Proceso.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombre).ToListAsync();
+                    listaProyecto = await db.Proyecto.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombre).ToListAsync();
+                    listaActor = await db.Actor.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombres).ToListAsync();
+                    listaEmpresa = await db.Empresa.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(x => x.Nombre).ToListAsync();
+                }
+
+                else
+                {
+
+                    listaCiudad = await db.Ciudad.OrderBy(c => c.Nombre).ToListAsync();
+                    listaProceso = await db.Proceso.OrderBy(c => c.Nombre).ToListAsync();
+                    listaProyecto = await db.Proyecto.OrderBy(c => c.Nombre).ToListAsync();
+                    listaActor = await db.Actor.OrderBy(c => c.Nombres).ToListAsync();
+                    listaEmpresa = await db.Empresa.OrderBy(x => x.Nombre).ToListAsync();
+                }
+
+
+                IQueryable<OrganismoControl> queryOrganismoControl = db.OrganismoControl;
+                var listaOrganismoControl = new List<OrganismoControl>();
+                if (User.IsInRole(Perfiles.AdministradorEmpresa))
+                {
+                    var UsuarioAutenticado = await _userManager.GetUserAsync(User);
+                    listaOrganismoControl = await queryOrganismoControl.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombre).ToListAsync();
+                }
+                else
+                {
+                    listaOrganismoControl = await queryOrganismoControl.OrderBy(c => c.Nombre).ToListAsync();
+                }
+
                 if (id != null)
                 {
                     var requisito = await db.Requisito.Include(c => c.DocumentoRequisito).Include(x => x.Accion).Include(c => c.Documento).ThenInclude(c => c.RequisitoLegal.OrganismoControl).FirstOrDefaultAsync(c => c.IdRequisito == id);
                     if (requisito == null)
                         return this.Redireccionar($"{Mensaje.Error}|{Mensaje.RegistroNoEncontrado}");
-                    ViewData["Ciudad"] = new SelectList(await db.Ciudad.OrderBy(c => c.Nombre).ToListAsync(), "IdCiudad", "Nombre");
-                    ViewData["Proceso"] = new SelectList(await db.Proceso.OrderBy(c => c.Nombre).ToListAsync(), "IdProceso", "Nombre");
-                    ViewData["Proyecto"] = new SelectList(await db.Proyecto.OrderBy(c => c.Nombre).ToListAsync(), "IdProyecto", "Nombre");
-                    ViewData["Actor"] = new SelectList(await db.Actor.OrderBy(c => c.Nombres).ToListAsync(), "IdActor", "Nombres");
-                    ViewData["Status"] = new SelectList(await db.Status.ToListAsync(), "IdStatus", "Nombre");
-                    ViewData["OrganismoControl"] = new SelectList(await db.OrganismoControl.OrderBy(c => c.Nombre).ToListAsync(), "IdOrganismoControl", "Nombre", requisito.Documento.RequisitoLegal.IdOrganismoControl);
+
+                    ViewData["Empresas"] = new SelectList(listaEmpresa.OrderBy(x => x.Nombre).ToList(), "IdEmpresa", "Nombre", requisito.Documento.RequisitoLegal.OrganismoControl.IdEmpresa);
+                    requisito.IdEmpresa = requisito.Documento.RequisitoLegal.OrganismoControl.IdEmpresa ?? -1;
+
+                    ViewData["OrganismoControl"] = new SelectList(listaOrganismoControl.Where(x => x.IdEmpresa == requisito.IdEmpresa), "IdOrganismoControl", "Nombre");
+                    ViewData["Ciudad"] = new SelectList(listaCiudad.Where(x => x.IdEmpresa == requisito.IdEmpresa), "IdCiudad", "Nombre");
+                    ViewData["Proceso"] = new SelectList(listaProceso.Where(x => x.IdEmpresa == requisito.IdEmpresa), "IdProceso", "Nombre");
+                    ViewData["Proyecto"] = new SelectList(listaProyecto.Where(x => x.IdEmpresa == requisito.IdEmpresa), "IdProyecto", "Nombre");
+                    ViewData["Actor"] = new SelectList(listaActor.Where(x => x.IdEmpresa == requisito.IdEmpresa), "IdActor", "Nombres");
+
+
+                    //ViewData["OrganismoControl"] = new SelectList(await db.OrganismoControl.OrderBy(c => c.Nombre).ToListAsync(), "IdOrganismoControl", "Nombre", requisito.Documento.RequisitoLegal.IdOrganismoControl);
                     ViewData["RequisitoLegal"] = await ObtenerSelectListRequisitoLegal(requisito?.Documento?.RequisitoLegal?.IdOrganismoControl ?? -1);
                     ViewData["Documento"] = await ObtenerSelectListDocumento(requisito?.Documento?.IdRequisitoLegal ?? -1);
                     requisito.IdStatusAnterior = requisito.IdStatus;
                     return View(requisito);
+
                 }
                 return this.Redireccionar("Requisito", "IndexFinalizado", $"{Mensaje.Error}|{Mensaje.ErrorCargarDatos}");
             }
@@ -575,120 +745,7 @@ namespace SistemasLegales.Controllers
             return this.Redireccionar($"{Mensaje.Error}|{Mensaje.RegistroNoEncontrado}");
         }
 
-        [Authorize(Policy = "Gestion")]
-        public async Task<IActionResult> Gestionar(int? id)
-        {
-            try
-            {
-                ViewBag.accion = id == null ? "Crear" : "Editar";
-                ViewData["Status"] = new SelectList(await db.Status.ToListAsync(), "IdStatus", "Nombre");
 
-                IQueryable<Ciudad> queryCiudad = db.Ciudad;
-                IQueryable<Proceso> queryProceso = db.Proceso;
-                IQueryable<Proyecto> queryProyecto = db.Proyecto;
-                IQueryable<Actor> queryActor = db.Actor;
-                IQueryable<Empresa> queryEmpresa = db.Empresa;
-
-                List<Ciudad> listaCiudad = new List<Ciudad>();
-                List<Proceso> listaProceso = new List<Proceso>();
-                List<Proyecto> listaProyecto = new List<Proyecto>();
-                List<Actor> listaActor = new List<Actor>();
-                List<Empresa> listaEmpresa = new List<Empresa>();
-
-                if (User.IsInRole(Perfiles.AdministradorEmpresa))
-                {
-                    var UsuarioAutenticado = await _userManager.GetUserAsync(User);
-                    listaCiudad = await db.Ciudad.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombre).ToListAsync();
-                    listaProceso = await db.Proceso.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombre).ToListAsync();
-                    listaProyecto = await db.Proyecto.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombre).ToListAsync();
-                    listaActor = await db.Actor.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombres).ToListAsync();
-                    listaEmpresa = await db.Empresa.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(x => x.Nombre).ToListAsync();
-                }
-
-                else
-                {
-
-                    listaCiudad = await db.Ciudad.OrderBy(c => c.Nombre).ToListAsync();
-                    listaProceso = await db.Proceso.OrderBy(c => c.Nombre).ToListAsync();
-                    listaProyecto = await db.Proyecto.OrderBy(c => c.Nombre).ToListAsync();
-                    listaActor = await db.Actor.OrderBy(c => c.Nombres).ToListAsync();
-                    listaEmpresa = await db.Empresa.OrderBy(x => x.Nombre).ToListAsync();
-                }
-
-
-                IQueryable<OrganismoControl> queryOrganismoControl = db.OrganismoControl;
-                var listaOrganismoControl = new List<OrganismoControl>();
-                if (User.IsInRole(Perfiles.AdministradorEmpresa))
-                {
-                    var UsuarioAutenticado = await _userManager.GetUserAsync(User);
-                    listaOrganismoControl = await queryOrganismoControl.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombre).ToListAsync();
-                }
-                else
-                {
-                    listaOrganismoControl = await queryOrganismoControl.OrderBy(c => c.Nombre).ToListAsync();
-                }
-
-
-                if (id != null)
-                {
-                    var requisito = await db.Requisito.Include(c => c.DocumentoRequisito).Include(x => x.Accion).Include(c => c.Documento).ThenInclude(c => c.RequisitoLegal.OrganismoControl).FirstOrDefaultAsync(c => c.IdRequisito == id);
-                    if (requisito == null)
-                        return this.Redireccionar($"{Mensaje.Error}|{Mensaje.RegistroNoEncontrado}");
-
-                    if (requisito.Finalizado == true)
-                    {
-                        return this.Redireccionar($"{Mensaje.Informacion}|{Mensaje.RequisitoFinalizado}");
-                    }
-
-
-                    ViewData["Empresas"] = new SelectList(listaEmpresa.OrderBy(x => x.Nombre).ToList(), "IdEmpresa", "Nombre", requisito.Documento.RequisitoLegal.OrganismoControl.IdEmpresa);
-                    requisito.IdEmpresa= requisito.Documento.RequisitoLegal.OrganismoControl.IdEmpresa ?? -1;
-                    
-                    ViewData["OrganismoControl"] = new SelectList(listaOrganismoControl.Where(x => x.IdEmpresa == requisito.IdEmpresa), "IdOrganismoControl", "Nombre");
-                    ViewData["Ciudad"] = new SelectList(listaCiudad.Where(x => x.IdEmpresa == requisito.IdEmpresa), "IdCiudad", "Nombre");
-                    ViewData["Proceso"] = new SelectList(listaProceso.Where(x => x.IdEmpresa == requisito.IdEmpresa), "IdProceso", "Nombre");
-                    ViewData["Proyecto"] = new SelectList(listaProyecto.Where(x => x.IdEmpresa == requisito.IdEmpresa), "IdProyecto", "Nombre");
-                    ViewData["Actor"] = new SelectList(listaActor.Where(x => x.IdEmpresa == requisito.IdEmpresa), "IdActor", "Nombres");
-
-
-                    //ViewData["OrganismoControl"] = new SelectList(await db.OrganismoControl.OrderBy(c => c.Nombre).ToListAsync(), "IdOrganismoControl", "Nombre", requisito.Documento.RequisitoLegal.IdOrganismoControl);
-                    ViewData["RequisitoLegal"] = await ObtenerSelectListRequisitoLegal(requisito?.Documento?.RequisitoLegal?.IdOrganismoControl ?? -1);
-                    ViewData["Documento"] = await ObtenerSelectListDocumento(requisito?.Documento?.IdRequisitoLegal ?? -1);
-                    requisito.IdStatusAnterior = requisito.IdStatus;
-                    return View(requisito);
-                }
-
-
-                ViewData["Empresas"] = new SelectList(listaEmpresa.OrderBy(x => x.Nombre).ToList(), "IdEmpresa", "Nombre");
-
-                if ((ViewData["Empresas"] as SelectList).FirstOrDefault() != null)
-                {
-                    var idEmpresaInicial = int.Parse((ViewData["Empresas"] as SelectList).FirstOrDefault().Value);
-                    ViewData["OrganismoControl"] = new SelectList(listaOrganismoControl.Where(x => x.IdEmpresa == idEmpresaInicial), "IdOrganismoControl", "Nombre");
-                    ViewData["Ciudad"] = new SelectList(listaCiudad.Where(x => x.IdEmpresa == idEmpresaInicial), "IdCiudad", "Nombre");
-                    ViewData["Proceso"] = new SelectList(listaProceso.Where(x => x.IdEmpresa == idEmpresaInicial), "IdProceso", "Nombre");
-                    ViewData["Proyecto"] = new SelectList(listaProyecto.Where(x => x.IdEmpresa == idEmpresaInicial), "IdProyecto", "Nombre");
-                    ViewData["Actor"] = new SelectList(listaActor.Where(x => x.IdEmpresa == idEmpresaInicial), "IdActor", "Nombres");
-                }
-                else
-                {
-                    ViewData["OrganismoControl"] = new SelectList(listaOrganismoControl, "IdOrganismoControl", "Nombre");
-                    ViewData["Ciudad"] = new SelectList(listaCiudad, "IdCiudad", "Nombre");
-                    ViewData["Proceso"] = new SelectList(listaProceso, "IdProceso", "Nombre");
-                    ViewData["Proyecto"] = new SelectList(listaProyecto, "IdProyecto", "Nombre");
-                    ViewData["Actor"] = new SelectList(listaActor, "IdActor", "Nombres");
-                }
-
-                ViewData["RequisitoLegal"] = await ObtenerSelectListRequisitoLegal((ViewData["OrganismoControl"] as SelectList).FirstOrDefault() != null ? int.Parse((ViewData["OrganismoControl"] as SelectList).FirstOrDefault().Value) : -1);
-                ViewData["Documento"] = await ObtenerSelectListDocumento((ViewData["RequisitoLegal"] as SelectList).FirstOrDefault() != null ? int.Parse((ViewData["RequisitoLegal"] as SelectList).FirstOrDefault().Value) : -1);
-                var requisitoNew = new Requisito { IdRequisito = 0, IdStatusAnterior = -1, Accion = new List<Accion>() };
-                return View(requisitoNew);
-            }
-            catch (Exception ex)
-            {
-                return this.Redireccionar($"{Mensaje.Error}|{Mensaje.ErrorCargarDatos}");
-            }
-        }
 
         [HttpPost]
         [Authorize(Policy = "Administracion")]
@@ -1077,7 +1134,7 @@ namespace SistemasLegales.Controllers
                     listaOrganismoControl = await queryOrganismoControl.OrderBy(c => c.Nombre).ToListAsync();
                 }
 
-                
+
                 ViewData["Empresas"] = new SelectList(listaEmpresa.OrderBy(x => x.Nombre).ToList(), "IdEmpresa", "Nombre", requisito.IdEmpresa);
                 requisito.IdEmpresa = requisito.IdEmpresa ?? -1;
                 ViewData["OrganismoControl"] = new SelectList(listaOrganismoControl.Where(x => x.IdEmpresa == requisito.IdEmpresa), "IdOrganismoControl", "Nombre");
@@ -1315,9 +1372,9 @@ namespace SistemasLegales.Controllers
         {
             try
             {
-                var listaOrganismoControl = await db.OrganismoControl
-                    .Where(x => x.IdEmpresa == idEmpresa)
-                    .OrderBy(c => c.Nombre).ToListAsync();
+                var listaOrganismoControl =idEmpresa > 0 
+                    ? await db.OrganismoControl.Where(x => x.IdEmpresa == idEmpresa).OrderBy(c => c.Nombre).ToListAsync()
+                    : await db.OrganismoControl.OrderBy(c => c.Nombre).ToListAsync();
 
                 return Json(listaOrganismoControl);
             }
@@ -1392,10 +1449,9 @@ namespace SistemasLegales.Controllers
         {
             try
             {
-                var listaProceso = await db.Proceso
-                    .Where(x => x.IdEmpresa == idEmpresa)
-                    .OrderBy(c => c.Nombre).ToListAsync();
-
+                var listaProceso = idEmpresa > 0 
+                    ? await db.Proceso.Where(x => x.IdEmpresa == idEmpresa).OrderBy(c => c.Nombre).ToListAsync()
+                    : await db.Proceso.OrderBy(c => c.Nombre).ToListAsync();
                 return Json(listaProceso);
             }
             catch (Exception)
@@ -1409,9 +1465,9 @@ namespace SistemasLegales.Controllers
         {
             try
             {
-                var listaProyecto = await db.Proyecto
-                    .Where(x => x.IdEmpresa == idEmpresa)
-                    .OrderBy(c => c.Nombre).ToListAsync();
+                var listaProyecto =idEmpresa > 0 
+                    ? await db.Proyecto.Where(x => x.IdEmpresa == idEmpresa).OrderBy(c => c.Nombre).ToListAsync()
+                    : await db.Proyecto.OrderBy(c => c.Nombre).ToListAsync();
 
                 return Json(listaProyecto);
             }
@@ -1425,9 +1481,9 @@ namespace SistemasLegales.Controllers
         {
             try
             {
-                var listaActor = await db.Actor
-                    .Where(x => x.IdEmpresa == idEmpresa)
-                    .OrderBy(c => c.Nombres).ToListAsync();
+                var listaActor = idEmpresa > 0 ?
+                    await db.Actor.Where(x => x.IdEmpresa == idEmpresa).OrderBy(c => c.Nombres).ToListAsync()
+                    : await db.Actor.OrderBy(c => c.Nombres).ToListAsync();
 
                 return Json(listaActor);
             }
