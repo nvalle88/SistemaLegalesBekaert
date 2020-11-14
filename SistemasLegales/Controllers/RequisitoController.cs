@@ -55,7 +55,7 @@ namespace SistemasLegales.Controllers
                       .ThenBy(c => c.Status)
                       .ThenBy(c => c.IdProyecto).OrderBy(x => x.FechaCaducidad);
 
-            if (User.IsInRole(Perfiles.AdministradorEmpresa))
+            if (!User.IsInRole(Perfiles.Administrador))
             {
                 var UsuarioAutenticado = await _userManager.GetUserAsync(User);
                 lista = lista.Where(x => x.Documento.RequisitoLegal.OrganismoControl.IdEmpresa == UsuarioAutenticado.IdEmpresa);
@@ -84,7 +84,7 @@ namespace SistemasLegales.Controllers
                      .ThenBy(c => c.Status)
                      .ThenBy(c => c.IdProyecto).OrderBy(x => x.FechaCaducidad);
 
-            if (User.IsInRole(Perfiles.AdministradorEmpresa))
+            if (!User.IsInRole(Perfiles.Administrador))
             {
                 var UsuarioAutenticado = await _userManager.GetUserAsync(User);
                 lista = lista.Where(x => x.Documento.RequisitoLegal.OrganismoControl.IdEmpresa == UsuarioAutenticado.IdEmpresa);
@@ -223,7 +223,7 @@ namespace SistemasLegales.Controllers
                 List<Actor> listaActor = new List<Actor>();
                 List<Empresa> listaEmpresa = new List<Empresa>();
 
-                if (User.IsInRole(Perfiles.AdministradorEmpresa))
+                if (!User.IsInRole(Perfiles.Administrador))
                 {
                     var UsuarioAutenticado = await _userManager.GetUserAsync(User);
                     listaCiudad = await db.Ciudad.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombre).ToListAsync();
@@ -246,7 +246,7 @@ namespace SistemasLegales.Controllers
 
                 IQueryable<OrganismoControl> queryOrganismoControl = db.OrganismoControl;
                 var listaOrganismoControl = new List<OrganismoControl>();
-                if (User.IsInRole(Perfiles.AdministradorEmpresa))
+                if (!User.IsInRole(Perfiles.Administrador))
                 {
                     var UsuarioAutenticado = await _userManager.GetUserAsync(User);
                     listaOrganismoControl = await queryOrganismoControl.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombre).ToListAsync();
@@ -340,7 +340,7 @@ namespace SistemasLegales.Controllers
                 List<Empresa> listaEmpresa = new List<Empresa>();
 
 
-                if (User.IsInRole(Perfiles.AdministradorEmpresa))
+                if (!User.IsInRole(Perfiles.Administrador))
                 {
                     var UsuarioAutenticado = await _userManager.GetUserAsync(User);
                     listaCiudad = await db.Ciudad.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombre).ToListAsync();
@@ -363,7 +363,7 @@ namespace SistemasLegales.Controllers
 
                 IQueryable<OrganismoControl> queryOrganismoControl = db.OrganismoControl;
                 var listaOrganismoControl = new List<OrganismoControl>();
-                if (User.IsInRole(Perfiles.AdministradorEmpresa))
+                if (!User.IsInRole(Perfiles.Administrador))
                 {
                     var UsuarioAutenticado = await _userManager.GetUserAsync(User);
                     listaOrganismoControl = await queryOrganismoControl.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombre).ToListAsync();
@@ -489,7 +489,7 @@ namespace SistemasLegales.Controllers
                 var resultadoEmpresa = new List<Empresa>();
 
 
-                if (User.IsInRole(Perfiles.AdministradorEmpresa))
+                if (!User.IsInRole(Perfiles.Administrador))
                 {
                     var UsuarioAutenticado = await _userManager.GetUserAsync(User);
                     listadoOrganismoControl = listadoOrganismoControl.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa);
@@ -547,7 +547,7 @@ namespace SistemasLegales.Controllers
                 var resultadoEmpresa = new List<Empresa>();
 
 
-                if (User.IsInRole(Perfiles.AdministradorEmpresa))
+                if (!User.IsInRole(Perfiles.Administrador))
                 {
                     var UsuarioAutenticado = await _userManager.GetUserAsync(User);
                     listadoOrganismoControl = listadoOrganismoControl.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa);
@@ -745,8 +745,6 @@ namespace SistemasLegales.Controllers
             return this.Redireccionar($"{Mensaje.Error}|{Mensaje.RegistroNoEncontrado}");
         }
 
-
-
         [HttpPost]
         [Authorize(Policy = "Administracion")]
         public async Task<IActionResult> Clonar(Requisito requisito, IFormFile file)
@@ -943,7 +941,7 @@ namespace SistemasLegales.Controllers
                 if (requisito.IdStatus == EstadoRequisito.Terminado && file == null)
                 {
 
-                    if (User.IsInRole(Perfiles.AdministradorEmpresa))
+                    if (!User.IsInRole(Perfiles.Administrador))
                     {
                         var UsuarioAutenticado = await _userManager.GetUserAsync(User);
                         listaCiudad = await db.Ciudad.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombre).ToListAsync();
@@ -1112,7 +1110,7 @@ namespace SistemasLegales.Controllers
                 }
 
 
-                if (User.IsInRole(Perfiles.AdministradorEmpresa))
+                if (!User.IsInRole(Perfiles.Administrador))
                 {
                     var UsuarioAutenticado = await _userManager.GetUserAsync(User);
                     listaCiudad = await db.Ciudad.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).OrderBy(c => c.Nombre).ToListAsync();
@@ -1315,8 +1313,6 @@ namespace SistemasLegales.Controllers
             return Json(listaAcciones);
         }
 
-
-
         [Authorize(Policy = "GerenciaGestion")]
         public async Task<IActionResult> DescargarArchivo(int id)
         {
@@ -1367,22 +1363,7 @@ namespace SistemasLegales.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<JsonResult> ObtenerOrganismoControlPorEmpresa(int idEmpresa)
-        {
-            try
-            {
-                var listaOrganismoControl =idEmpresa > 0 
-                    ? await db.OrganismoControl.Where(x => x.IdEmpresa == idEmpresa).OrderBy(c => c.Nombre).ToListAsync()
-                    : await db.OrganismoControl.OrderBy(c => c.Nombre).ToListAsync();
 
-                return Json(listaOrganismoControl);
-            }
-            catch (Exception)
-            {
-                return new JsonResult(new List<OrganismoControl>());
-            }
-        }
 
         [HttpPost]
         [Authorize(Policy = "GerenciaGestion")]
@@ -1391,8 +1372,6 @@ namespace SistemasLegales.Controllers
             ViewBag.RequisitoLegal = await ObtenerSelectListRequisitoLegal(idOrganismoControl);
             return PartialView("_RequisitoLegalSelect", new Requisito());
         }
-
-
 
         [HttpPost]
         [Authorize(Policy = "Administracion")]
@@ -1436,6 +1415,12 @@ namespace SistemasLegales.Controllers
                     .Where(x => x.IdEmpresa == idEmpresa)
                     .OrderBy(c => c.Nombre).ToListAsync();
 
+                if (!User.IsInRole(Perfiles.Administrador))
+                {
+                    var UsuarioAutenticado = await _userManager.GetUserAsync(User);
+                    listaCiudad = listaCiudad.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).ToList();
+                }
+
                 return Json(listaCiudad);
             }
             catch (Exception)
@@ -1452,6 +1437,11 @@ namespace SistemasLegales.Controllers
                 var listaProceso = idEmpresa > 0 
                     ? await db.Proceso.Where(x => x.IdEmpresa == idEmpresa).OrderBy(c => c.Nombre).ToListAsync()
                     : await db.Proceso.OrderBy(c => c.Nombre).ToListAsync();
+                if (!User.IsInRole(Perfiles.Administrador))
+                {
+                    var UsuarioAutenticado = await _userManager.GetUserAsync(User);
+                    listaProceso = listaProceso.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).ToList();
+                }
                 return Json(listaProceso);
             }
             catch (Exception)
@@ -1469,6 +1459,12 @@ namespace SistemasLegales.Controllers
                     ? await db.Proyecto.Where(x => x.IdEmpresa == idEmpresa).OrderBy(c => c.Nombre).ToListAsync()
                     : await db.Proyecto.OrderBy(c => c.Nombre).ToListAsync();
 
+                if (!User.IsInRole(Perfiles.Administrador))
+                {
+                    var UsuarioAutenticado = await _userManager.GetUserAsync(User);
+                    listaProyecto = listaProyecto.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).ToList();
+                }
+
                 return Json(listaProyecto);
             }
             catch (Exception)
@@ -1485,6 +1481,12 @@ namespace SistemasLegales.Controllers
                     await db.Actor.Where(x => x.IdEmpresa == idEmpresa).OrderBy(c => c.Nombres).ToListAsync()
                     : await db.Actor.OrderBy(c => c.Nombres).ToListAsync();
 
+                if (!User.IsInRole(Perfiles.Administrador))
+                {
+                    var UsuarioAutenticado = await _userManager.GetUserAsync(User);
+                    listaActor = listaActor.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).ToList();
+                }
+
                 return Json(listaActor);
             }
             catch (Exception)
@@ -1497,15 +1499,48 @@ namespace SistemasLegales.Controllers
         {
             var listaRequisitoLegal = idOrganismoControl != -1 ? await db.RequisitoLegal.Where(c => c.IdOrganismoControl == idOrganismoControl).Select(y => new RequisitoLegal
             { IdRequisitoLegal = y.IdRequisitoLegal, Nombre = y.Nombre.Length > 100 ? y.Nombre.Substring(0, 100).ToString() + " ..." : y.Nombre }).ToListAsync() : new List<RequisitoLegal>();
+
+            if (!User.IsInRole(Perfiles.Administrador))
+            {
+                var UsuarioAutenticado = await _userManager.GetUserAsync(User);
+                listaRequisitoLegal = listaRequisitoLegal.Where(x => x.OrganismoControl.IdEmpresa == UsuarioAutenticado.IdEmpresa).ToList();
+            }
             return Json(listaRequisitoLegal);
         }
 
+        [HttpPost]
+        public async Task<JsonResult> ObtenerOrganismoControlPorEmpresa(int idEmpresa)
+        {
+            try
+            {
+                var listaOrganismoControl = idEmpresa > 0
+                    ? await db.OrganismoControl.Where(x => x.IdEmpresa == idEmpresa).OrderBy(c => c.Nombre).ToListAsync()
+                    : await db.OrganismoControl.OrderBy(c => c.Nombre).ToListAsync();
+                
+                if (!User.IsInRole(Perfiles.Administrador))
+                {
+                    var UsuarioAutenticado = await _userManager.GetUserAsync(User);
+                    listaOrganismoControl = listaOrganismoControl.Where(x => x.IdEmpresa == UsuarioAutenticado.IdEmpresa).ToList();
+                }
+
+                return Json(listaOrganismoControl);
+            }
+            catch (Exception)
+            {
+                return new JsonResult(new List<OrganismoControl>());
+            }
+        }
 
         public async Task<JsonResult> ObtenerDocumentoPorRequisitoLegal(int idRequisitoLegal)
         {
             var listaDocumento = idRequisitoLegal != -1 ? await db.Documento.Where(c => c.IdRequisitoLegal == idRequisitoLegal)
                                                                       .Select(y => new Documento { IdDocumento = y.IdDocumento, Nombre = y.Nombre.Length > 100 ? y.Nombre.Substring(0, 100).ToString() + " ..." : y.Nombre })
                                                                       .ToListAsync() : new List<Documento>();
+            if (!User.IsInRole(Perfiles.Administrador))
+            {
+                var UsuarioAutenticado = await _userManager.GetUserAsync(User);
+                listaDocumento = listaDocumento.Where(x => x.RequisitoLegal.OrganismoControl.IdEmpresa == UsuarioAutenticado.IdEmpresa).ToList();
+            }
             return Json(listaDocumento);
         }
 
