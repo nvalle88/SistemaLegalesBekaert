@@ -513,12 +513,9 @@ namespace SistemasLegales.Controllers
                 resultadoProyectos.Insert(0, new Proyecto { IdProyecto = -1, Nombre = "Todos" });
                 ViewData["Proyecto"] = new SelectList(resultadoProyectos, "IdProyecto", "Nombre");
 
-                if (!User.IsInRole(Perfiles.AdministradorEmpresa))
-                    resultadoEmpresa.Insert(0, new Empresa { IdEmpresa = -1, Nombre = "Todos" });
 
+                resultadoEmpresa.Insert(0, new Empresa { IdEmpresa = -1, Nombre = "Todos" });
                 ViewData["Empresas"] = new SelectList(resultadoEmpresa, "IdEmpresa", "Nombre");
-
-
 
             }
             catch (Exception)
@@ -575,9 +572,8 @@ namespace SistemasLegales.Controllers
                 resultadoProyectos.Insert(0, new Proyecto { IdProyecto = -1, Nombre = "Todos" });
                 ViewData["Proyecto"] = new SelectList(resultadoProyectos, "IdProyecto", "Nombre");
 
-                if (!User.IsInRole(Perfiles.AdministradorEmpresa))
-                    resultadoEmpresa.Insert(0, new Empresa { IdEmpresa = -1, Nombre = "Todos" });
 
+                resultadoEmpresa.Insert(0, new Empresa { IdEmpresa = -1, Nombre = "Todos" });
                 ViewData["Empresas"] = new SelectList(resultadoEmpresa, "IdEmpresa", "Nombre");
 
 
@@ -1363,8 +1359,6 @@ namespace SistemasLegales.Controllers
             }
         }
 
-
-
         [HttpPost]
         [Authorize(Policy = "GerenciaGestion")]
         public async Task<IActionResult> RequisitoLegal_SelectResult(int idOrganismoControl)
@@ -1434,7 +1428,7 @@ namespace SistemasLegales.Controllers
         {
             try
             {
-                var listaProceso = idEmpresa > 0 
+                var listaProceso = idEmpresa > 0
                     ? await db.Proceso.Where(x => x.IdEmpresa == idEmpresa).OrderBy(c => c.Nombre).ToListAsync()
                     : await db.Proceso.OrderBy(c => c.Nombre).ToListAsync();
                 if (!User.IsInRole(Perfiles.Administrador))
@@ -1455,7 +1449,7 @@ namespace SistemasLegales.Controllers
         {
             try
             {
-                var listaProyecto =idEmpresa > 0 
+                var listaProyecto = idEmpresa > 0
                     ? await db.Proyecto.Where(x => x.IdEmpresa == idEmpresa).OrderBy(c => c.Nombre).ToListAsync()
                     : await db.Proyecto.OrderBy(c => c.Nombre).ToListAsync();
 
@@ -1498,7 +1492,8 @@ namespace SistemasLegales.Controllers
         public async Task<JsonResult> ObtenerRequisitoLegalPorOrganismoControl(int idOrganismoControl)
         {
             var listaRequisitoLegal = idOrganismoControl != -1 ? await db.RequisitoLegal.Where(c => c.IdOrganismoControl == idOrganismoControl).Select(y => new RequisitoLegal
-            { IdRequisitoLegal = y.IdRequisitoLegal, Nombre = y.Nombre.Length > 100 ? y.Nombre.Substring(0, 100).ToString() + " ..." : y.Nombre }).ToListAsync() : new List<RequisitoLegal>();
+            { IdRequisitoLegal = y.IdRequisitoLegal, Nombre = y.Nombre.Length > 100 ? y.Nombre.Substring(0, 100).ToString() + " ..." : y.Nombre, OrganismoControl = y.OrganismoControl }).ToListAsync() : new List<RequisitoLegal>();
+
 
             if (!User.IsInRole(Perfiles.Administrador))
             {
@@ -1516,7 +1511,7 @@ namespace SistemasLegales.Controllers
                 var listaOrganismoControl = idEmpresa > 0
                     ? await db.OrganismoControl.Where(x => x.IdEmpresa == idEmpresa).OrderBy(c => c.Nombre).ToListAsync()
                     : await db.OrganismoControl.OrderBy(c => c.Nombre).ToListAsync();
-                
+
                 if (!User.IsInRole(Perfiles.Administrador))
                 {
                     var UsuarioAutenticado = await _userManager.GetUserAsync(User);
@@ -1534,7 +1529,16 @@ namespace SistemasLegales.Controllers
         public async Task<JsonResult> ObtenerDocumentoPorRequisitoLegal(int idRequisitoLegal)
         {
             var listaDocumento = idRequisitoLegal != -1 ? await db.Documento.Where(c => c.IdRequisitoLegal == idRequisitoLegal)
-                                                                      .Select(y => new Documento { IdDocumento = y.IdDocumento, Nombre = y.Nombre.Length > 100 ? y.Nombre.Substring(0, 100).ToString() + " ..." : y.Nombre })
+                                                                      .Select(y => new Documento
+                                                                      {
+                                                                          IdDocumento = y.IdDocumento,
+                                                                          RequisitoLegal = new RequisitoLegal
+                                                                          {
+                                                                              IdRequisitoLegal = y.IdRequisitoLegal,
+                                                                              OrganismoControl = y.RequisitoLegal.OrganismoControl,
+                                                                          },
+                                                                          Nombre = y.Nombre.Length > 100 ? y.Nombre.Substring(0, 100).ToString() + " ..." : y.Nombre
+                                                                      })
                                                                       .ToListAsync() : new List<Documento>();
             if (!User.IsInRole(Perfiles.Administrador))
             {
