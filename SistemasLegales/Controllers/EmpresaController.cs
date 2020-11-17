@@ -107,7 +107,7 @@ namespace SistemasLegales.Controllers
                 }
                 return this.VistaError(empresa, $"{Mensaje.Error}|{Mensaje.ModeloInvalido}");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return this.Redireccionar($"{Mensaje.Error}|{Mensaje.Excepcion}");
             }

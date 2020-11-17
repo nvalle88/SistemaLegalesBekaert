@@ -1,4 +1,5 @@
-﻿using SistemasLegales.Models.Utiles;
+﻿using SistemasLegales.Models.Entidades;
+using SistemasLegales.Models.Utiles;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace SistemasLegales.Services
     public interface IUploadFileService
     {
         Task<bool> UploadFile(byte[] file, string folder, string fileName);
-        Task<bool> UploadFiles(DocumentoRequisitoTransfer documentoRequisitoTransfer);
+        Task<bool> UploadFiles(DocumentoRequisitoTransfer documentoRequisitoTransfer,Empresa empresa);
         bool DeleteFile(string url);
         string FileExtension(string fileName);
         DocumentoRequisitoTransfer GetFileDocumentoRequisito(string folder, int idDocumentoRequisito, string fileName);

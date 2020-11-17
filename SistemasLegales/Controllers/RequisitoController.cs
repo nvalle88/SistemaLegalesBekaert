@@ -154,7 +154,7 @@ namespace SistemasLegales.Controllers
                 return PartialView("_Listado", listaRequisitos);
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500);
             }
@@ -312,7 +312,7 @@ namespace SistemasLegales.Controllers
                 var requisitoNew = new Requisito { IdRequisito = 0, IdStatusAnterior = -1, Accion = new List<Accion>() };
                 return View(requisitoNew);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return this.Redireccionar($"{Mensaje.Error}|{Mensaje.ErrorCargarDatos}");
             }
@@ -450,8 +450,9 @@ namespace SistemasLegales.Controllers
 
                         if (data.Length > 0)
                         {
+                            var empresaSeleccionada = db.Empresa.Where(x => x.IdEmpresa == requisito.IdEmpresa).FirstOrDefault();
                             var activoFijoDocumentoTransfer = new DocumentoRequisitoTransfer { Nombre = file.FileName, Fichero = data, IdRequisito = miRequisito.IdRequisito };
-                            responseFile = await uploadFileService.UploadFiles(activoFijoDocumentoTransfer);
+                            responseFile = await uploadFileService.UploadFiles(activoFijoDocumentoTransfer,empresaSeleccionada);
                         }
                     }
                     await miRequisito.EnviarEmailNotificaionFinalizadoModificado(User.Identity.Name, _userManager, emailSender, db);
@@ -842,22 +843,24 @@ namespace SistemasLegales.Controllers
 
                         if (data.Length > 0)
                         {
+                            var empresa = db.Empresa.Where(x => x.IdEmpresa == requisito.IdEmpresa).FirstOrDefault();
                             var activoFijoDocumentoTransfer = new DocumentoRequisitoTransfer { Nombre = file.FileName, Fichero = data, IdRequisito = miRequisito.IdRequisito };
-                            responseFile = await uploadFileService.UploadFiles(activoFijoDocumentoTransfer);
+                            responseFile = await uploadFileService.UploadFiles(activoFijoDocumentoTransfer,empresa);
                         }
                     }
 
 
                     if (requisito.IdStatus != requisito.IdStatusAnterior && requisito.IdStatusAnterior == EstadoRequisito.Terminado)
                     {
+                        var empresa =await db.Empresa.Where(x => x.IdEmpresa == requisito.IdEmpresa).FirstOrDefaultAsync();
                         var url = "";
                         if (requisito.IdRequisito == 0)
                         {
-                            url = $"{this.Request.Scheme}://{this.Request.Host}/{Mensaje.CarpertaHost}{this.Request.Path}/{miRequisito.IdRequisito}";
+                            url = $"{this.Request.Scheme}://{this.Request.Host}/{empresa.Nombre.Trim()}{this.Request.Path}/{miRequisito.IdRequisito}";
                         }
                         else
                         {
-                            url = $"{this.Request.Scheme}://{this.Request.Host}/{Mensaje.CarpertaHost}{this.Request.Path}";
+                            url = $"{this.Request.Scheme}://{this.Request.Host}/{empresa.Nombre.Trim()}{this.Request.Path}";
                         }
                         await miRequisito.EnviarEmailNotificaionNoFinalizado(url, emailSender, db);
                     }
@@ -878,14 +881,15 @@ namespace SistemasLegales.Controllers
 
                     if (nuevoRegistro)
                     {
+                        var empresa = await db.Empresa.Where(x => x.IdEmpresa == requisito.IdEmpresa).FirstOrDefaultAsync();
                         var url = "";
                         if (requisito.IdRequisito == 0)
                         {
-                            url = $"{this.Request.Scheme}://{this.Request.Host}/{Mensaje.CarpertaHost}{this.Request.Path}/{miRequisito.IdRequisito}";
+                            url = $"{this.Request.Scheme}://{this.Request.Host}/{empresa.Nombre.Trim()}{this.Request.Path}/{miRequisito.IdRequisito}";
                         }
                         else
                         {
-                            url = $"{this.Request.Scheme}://{this.Request.Host}/{Mensaje.CarpertaHost}{this.Request.Path}";
+                            url = $"{this.Request.Scheme}://{this.Request.Host}/{empresa.Nombre.Trim()}{this.Request.Path}";
                         }
                         await miRequisito.EnviarEmailNotificaionRequisitoCreacion(url, emailSender, db);
                     }
@@ -1051,22 +1055,24 @@ namespace SistemasLegales.Controllers
 
                         if (data.Length > 0)
                         {
+                            var empresaSeleccionada = db.Empresa.Where(x => x.IdEmpresa == requisito.IdEmpresa).FirstOrDefault();
                             var activoFijoDocumentoTransfer = new DocumentoRequisitoTransfer { Nombre = file.FileName, Fichero = data, IdRequisito = miRequisito.IdRequisito };
-                            responseFile = await uploadFileService.UploadFiles(activoFijoDocumentoTransfer);
+                            responseFile = await uploadFileService.UploadFiles(activoFijoDocumentoTransfer, empresaSeleccionada);
                         }
                     }
 
 
                     if (requisito.IdStatus != requisito.IdStatusAnterior && requisito.IdStatusAnterior == EstadoRequisito.Terminado)
                     {
+                        var empresa = await db.Empresa.Where(x => x.IdEmpresa == requisito.IdEmpresa).FirstOrDefaultAsync();
                         var url = "";
                         if (requisito.IdRequisito == 0)
                         {
-                            url = $"{this.Request.Scheme}://{this.Request.Host}/{Mensaje.CarpertaHost}{this.Request.Path}/{miRequisito.IdRequisito}";
+                            url = $"{this.Request.Scheme}://{this.Request.Host}/{empresa.Nombre.Trim()}{this.Request.Path}/{miRequisito.IdRequisito}";
                         }
                         else
                         {
-                            url = $"{this.Request.Scheme}://{this.Request.Host}/{Mensaje.CarpertaHost}{this.Request.Path}";
+                            url = $"{this.Request.Scheme}://{this.Request.Host}/{empresa.Nombre.Trim()}{this.Request.Path}";
                         }
                         await miRequisito.EnviarEmailNotificaionNoFinalizado(url, emailSender, db);
                     }
@@ -1087,14 +1093,15 @@ namespace SistemasLegales.Controllers
 
                     if (nuevoRegistro)
                     {
+                        var empresa = await db.Empresa.Where(x => x.IdEmpresa == requisito.IdEmpresa).FirstOrDefaultAsync();
                         var url = "";
                         if (requisito.IdRequisito == 0)
                         {
-                            url = $"{this.Request.Scheme}://{this.Request.Host}/{Mensaje.CarpertaHost}{this.Request.Path}/{miRequisito.IdRequisito}";
+                            url = $"{this.Request.Scheme}://{this.Request.Host}/{empresa.Nombre.Trim()}{this.Request.Path}/{miRequisito.IdRequisito}";
                         }
                         else
                         {
-                            url = $"{this.Request.Scheme}://{this.Request.Host}/{Mensaje.CarpertaHost}{this.Request.Path}";
+                            url = $"{this.Request.Scheme}://{this.Request.Host}/{empresa.Nombre.Trim()}{this.Request.Path}";
                         }
                         await miRequisito.EnviarEmailNotificaionRequisitoCreacion(url, emailSender, db);
                     }
@@ -1280,7 +1287,7 @@ namespace SistemasLegales.Controllers
 
                 return Json(listaAcciones);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
                 throw;

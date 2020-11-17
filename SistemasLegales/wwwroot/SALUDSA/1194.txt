@@ -1,0 +1,61 @@
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cabecera"></param>
+        /// <param name="correoElectronico"></param>
+        /// <param name="estadoActivo"></param>
+        /// <param name="idUsuario"></param>
+        /// <returns></returns>
+        [Route("ActualizarPrestadorUsuario")]
+        [HttpGet]
+        [ResponseType(typeof(RespuestaGenericaServicio<bool>))]
+        public async Task<HttpResponseMessage> ActualizarPrestadorUsuario([AtributoCabecera] CabeceraServicioRest cabecera,
+            string correoElectronico,
+            bool estadoActivo,
+            string idUsuario)
+        {
+            #region Implementacion
+
+            #region Variables
+
+            BitacoraSistema bitacora = null;
+
+            #endregion Variables
+
+            try
+            {
+                #region Validacion
+
+                bitacora = InformacionBitacora.CrearRequerimientoBitacora(ActionContext);
+
+                if (Validar.Verificar(cabecera, bitacora, out var response)) return response;
+
+                var listaMensajeError = new List<string>();
+                if (!Guid.TryParse(idUsuario, out var idUsuarioGuid))
+                    listaMensajeError.Add("El id del usuario no cumple con el formato establecido");
+
+                if (!Validar.Email(correoElectronico))
+                    listaMensajeError.Add("El correo electrónico es inválido");
+
+                if (listaMensajeError.Count > 0)
+                    return CrearRespuestaErrorValidacion(listaMensajeError, bitacora);
+                #endregion Validacion
+
+                var respuesta = AdministracionTercero.ActualizarPrestadorUsuario(correoElectronico, estadoActivo, idUsuarioGuid);
+
+                return respuesta ? CrearRespuestaExito(respuesta, bitacora)
+                    : CrearRespuestaErrorNegocio(ObtenerMensajeCatalogo("NO_EXISTE_DATA",
+                    true,
+                    "No ha sido posible actualizar el usuario, intente nuevamente"), bitacora);
+            }
+            catch (ExcepcionNegocio exn)
+            {
+                return CrearRespuestaErrorNegocio(exn, bitacora);
+            }
+            catch (Exception ex)
+            {
+                return CrearRespuestaErrorInterno(ex, bitacora);
+            }
+
+            #endregion Implementacion
+        }

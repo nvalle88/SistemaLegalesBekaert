@@ -37,7 +37,7 @@ namespace SistemasLegales.Controllers
                 }
                 resultado = await lista.Include(c=> c.OrganismoControl).ThenInclude(x=>x.Empresa).OrderBy(c => c.Nombre).ToListAsync();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 TempData["Mensaje"] = $"{Mensaje.Error}|{Mensaje.ErrorListado}";
             }

@@ -116,7 +116,7 @@ namespace SistemasLegales.Services
         #endregion
 
         #region Métodos externos (se utilizan para llamarlos desde los controladores)
-        public async Task<bool> UploadFiles(DocumentoRequisitoTransfer documentoRequisitoTransfer)
+        public async Task<bool> UploadFiles(DocumentoRequisitoTransfer documentoRequisitoTransfer,Empresa empresa)
         {
             try
             {
@@ -130,10 +130,13 @@ namespace SistemasLegales.Services
                 await db.SaveChangesAsync();
 
                 string extensionFile = FileExtension(documentoRequisitoTransfer.Nombre);
-                await UploadFile(documentoRequisitoTransfer.Fichero, Mensaje.CarpetaDocumento, $"{documentoRequisito.IdDocumentoRequisito}{extensionFile}");
+
+                //Mensaje.CarpetaDocumento
+
+                await UploadFile(documentoRequisitoTransfer.Fichero,empresa.Nombre.Trim(), $"{documentoRequisito.IdDocumentoRequisito}{extensionFile}");
 
                 var seleccionado = await db.DocumentoRequisito.FindAsync(documentoRequisito.IdDocumentoRequisito);
-                seleccionado.Url = $"{Mensaje.CarpetaDocumento}/{documentoRequisito.IdDocumentoRequisito}{extensionFile}";
+                seleccionado.Url = $"{empresa.Nombre.Trim()}/{documentoRequisito.IdDocumentoRequisito}{extensionFile}";
                 db.DocumentoRequisito.Update(seleccionado);
                 await db.SaveChangesAsync();
                 return true;
@@ -151,8 +154,8 @@ namespace SistemasLegales.Services
         {
             try
             {
-                var documentoRequisito = await db.DocumentoRequisito.FirstOrDefaultAsync(c => c.IdDocumentoRequisito == idDocumentoRequisito);
-                return GetFileDocumentoRequisito(Mensaje.CarpetaDocumento, idDocumentoRequisito, documentoRequisito.Nombre);
+                var documentoRequisito = await db.DocumentoRequisito.Include(x=>x.Requisito.Documento.RequisitoLegal.OrganismoControl.Empresa).FirstOrDefaultAsync(c => c.IdDocumentoRequisito == idDocumentoRequisito);
+                return GetFileDocumentoRequisito(documentoRequisito.Requisito.Documento.RequisitoLegal.OrganismoControl.Empresa.Nombre.Trim(), idDocumentoRequisito, documentoRequisito.Nombre);
             }
             catch (Exception)
             {
