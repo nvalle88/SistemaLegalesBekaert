@@ -133,10 +133,10 @@ namespace SistemasLegales.Services
 
                 //Mensaje.CarpetaDocumento
 
-                await UploadFile(documentoRequisitoTransfer.Fichero,empresa.Nombre.Trim(), $"{documentoRequisito.IdDocumentoRequisito}{extensionFile}");
+                await UploadFile(documentoRequisitoTransfer.Fichero,empresa.IdEmpresa.ToString(), $"{documentoRequisito.IdDocumentoRequisito}{extensionFile}");
 
                 var seleccionado = await db.DocumentoRequisito.FindAsync(documentoRequisito.IdDocumentoRequisito);
-                seleccionado.Url = $"{empresa.Nombre.Trim()}/{documentoRequisito.IdDocumentoRequisito}{extensionFile}";
+                seleccionado.Url = $"{empresa.IdEmpresa}/{documentoRequisito.IdDocumentoRequisito}{extensionFile}";
                 db.DocumentoRequisito.Update(seleccionado);
                 await db.SaveChangesAsync();
                 return true;
@@ -155,7 +155,7 @@ namespace SistemasLegales.Services
             try
             {
                 var documentoRequisito = await db.DocumentoRequisito.Include(x=>x.Requisito.Documento.RequisitoLegal.OrganismoControl.Empresa).FirstOrDefaultAsync(c => c.IdDocumentoRequisito == idDocumentoRequisito);
-                return GetFileDocumentoRequisito(documentoRequisito.Requisito.Documento.RequisitoLegal.OrganismoControl.Empresa.Nombre.Trim(), idDocumentoRequisito, documentoRequisito.Nombre);
+                return GetFileDocumentoRequisito(documentoRequisito.Requisito.Documento.RequisitoLegal.OrganismoControl.Empresa.IdEmpresa.ToString(), idDocumentoRequisito, documentoRequisito.Nombre);
             }
             catch (Exception)
             {

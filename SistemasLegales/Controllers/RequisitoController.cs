@@ -856,11 +856,11 @@ namespace SistemasLegales.Controllers
                         var url = "";
                         if (requisito.IdRequisito == 0)
                         {
-                            url = $"{this.Request.Scheme}://{this.Request.Host}/{empresa.Nombre.Trim()}{this.Request.Path}/{miRequisito.IdRequisito}";
+                            url = $"{this.Request.Scheme}://{this.Request.Host}/{empresa.IdEmpresa}{this.Request.Path}/{miRequisito.IdRequisito}";
                         }
                         else
                         {
-                            url = $"{this.Request.Scheme}://{this.Request.Host}/{empresa.Nombre.Trim()}{this.Request.Path}";
+                            url = $"{this.Request.Scheme}://{this.Request.Host}/{empresa.IdEmpresa}{this.Request.Path}";
                         }
                         await miRequisito.EnviarEmailNotificaionNoFinalizado(url, emailSender, db);
                     }
@@ -885,11 +885,11 @@ namespace SistemasLegales.Controllers
                         var url = "";
                         if (requisito.IdRequisito == 0)
                         {
-                            url = $"{this.Request.Scheme}://{this.Request.Host}/{empresa.Nombre.Trim()}{this.Request.Path}/{miRequisito.IdRequisito}";
+                            url = $"{this.Request.Scheme}://{this.Request.Host}/{empresa.IdEmpresa}{this.Request.Path}/{miRequisito.IdRequisito}";
                         }
                         else
                         {
-                            url = $"{this.Request.Scheme}://{this.Request.Host}/{empresa.Nombre.Trim()}{this.Request.Path}";
+                            url = $"{this.Request.Scheme}://{this.Request.Host}/{empresa.IdEmpresa}{this.Request.Path}";
                         }
                         await miRequisito.EnviarEmailNotificaionRequisitoCreacion(url, emailSender, db);
                     }
@@ -1068,11 +1068,11 @@ namespace SistemasLegales.Controllers
                         var url = "";
                         if (requisito.IdRequisito == 0)
                         {
-                            url = $"{this.Request.Scheme}://{this.Request.Host}/{empresa.Nombre.Trim()}{this.Request.Path}/{miRequisito.IdRequisito}";
+                            url = $"{this.Request.Scheme}://{this.Request.Host}/{empresa.IdEmpresa}{this.Request.Path}/{miRequisito.IdRequisito}";
                         }
                         else
                         {
-                            url = $"{this.Request.Scheme}://{this.Request.Host}/{empresa.Nombre.Trim()}{this.Request.Path}";
+                            url = $"{this.Request.Scheme}://{this.Request.Host}/{empresa.IdEmpresa}{this.Request.Path}";
                         }
                         await miRequisito.EnviarEmailNotificaionNoFinalizado(url, emailSender, db);
                     }
@@ -1097,11 +1097,11 @@ namespace SistemasLegales.Controllers
                         var url = "";
                         if (requisito.IdRequisito == 0)
                         {
-                            url = $"{this.Request.Scheme}://{this.Request.Host}/{empresa.Nombre.Trim()}{this.Request.Path}/{miRequisito.IdRequisito}";
+                            url = $"{this.Request.Scheme}://{this.Request.Host}/{empresa.IdEmpresa}{this.Request.Path}/{miRequisito.IdRequisito}";
                         }
                         else
                         {
-                            url = $"{this.Request.Scheme}://{this.Request.Host}/{empresa.Nombre.Trim()}{this.Request.Path}";
+                            url = $"{this.Request.Scheme}://{this.Request.Host}/{empresa.IdEmpresa}{this.Request.Path}";
                         }
                         await miRequisito.EnviarEmailNotificaionRequisitoCreacion(url, emailSender, db);
                     }
