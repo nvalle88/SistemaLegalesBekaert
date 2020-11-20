@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using SistemasLegales.Models.Entidades;
+using SistemasLegales.Models.Utiles;
 using SistemasLegales.Services;
 using System;
 
@@ -13,30 +14,37 @@ namespace SistemasLegales.Controllers
         private readonly IReporteServicio reporteServicio;
         private readonly UserManager<ApplicationUser> _userManager;
         public IConfiguration Configuration { get; }
-        public ReportController( IReporteServicio reporteServicio, IConfiguration Configuration, UserManager<ApplicationUser> userManager)
+        public ReportController(IReporteServicio reporteServicio, IConfiguration Configuration, UserManager<ApplicationUser> userManager)
         {
             this.Configuration = Configuration;
             this.reporteServicio = reporteServicio;
             _userManager = userManager;
         }
 
-      
+
         public ActionResult RepTramites(int id)
         {
-            var UsuarioAutenticado = _userManager.GetUserAsync(User).Result;
+            int? idEmpresa = User.IsInRole(Perfiles.Administrador)
+                ? -1
+                : _userManager.GetUserAsync(User).Result.IdEmpresa;
+
             var nombreParametroIdEmpresa = Configuration.GetSection("NombreParametroIdEmpresa").Value;
             var parametersToAdd = reporteServicio.GetDefaultParameters(Configuration.GetSection("ReporteTramites").Value);
-            parametersToAdd = reporteServicio.AddParameters(nombreParametroIdEmpresa,Convert.ToString(UsuarioAutenticado.IdEmpresa),parametersToAdd);
+            parametersToAdd = reporteServicio.AddParameters(nombreParametroIdEmpresa, Convert.ToString(idEmpresa), parametersToAdd);
             var newUri = reporteServicio.GenerateUri(parametersToAdd);
             return Redirect(newUri);
         }
 
         public ActionResult ReporteEstadoVsTiempo()
         {
-            var UsuarioAutenticado = _userManager.GetUserAsync(User).Result;
+
+            int? idEmpresa = User.IsInRole(Perfiles.Administrador)
+                ? -1
+                : _userManager.GetUserAsync(User).Result.IdEmpresa;
+
             var nombreParametroIdEmpresa = Configuration.GetSection("NombreParametroIdEmpresa").Value;
             var parametersToAdd = reporteServicio.GetDefaultParameters(Configuration.GetSection("ReporteEstadoVsTiempo").Value);
-            parametersToAdd = reporteServicio.AddParameters(nombreParametroIdEmpresa, Convert.ToString(UsuarioAutenticado.IdEmpresa), parametersToAdd);
+            parametersToAdd = reporteServicio.AddParameters(nombreParametroIdEmpresa, Convert.ToString(idEmpresa), parametersToAdd);
             var newUri = reporteServicio.GenerateUri(parametersToAdd);
             return Redirect(newUri);
         }
